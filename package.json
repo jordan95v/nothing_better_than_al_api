@@ -1,0 +1,27 @@
+{
+  "name": "nothing_better_than_al_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:dev": "npx nodemon -e ts --exec ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "Jordan DUFRESNE, Romain LANCELOT, Steven CHOUK",
+  "license": "MIT",
+  "prisma": {
+    "schema": "./src/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.11.0",
+    "express": "^4.19.1",
+    "joi": "^17.12.2",
+    "prisma": "^5.11.0",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.30",
+    "nodemon": "^3.1.0"
+  }
+}
