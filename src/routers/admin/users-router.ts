@@ -1,14 +1,14 @@
 import { Router, Request, Response } from "express"
-import {
-  authMiddleware,
-  authMiddlewareAdmin,
-} from "../../middlewares/auth-middleware"
 import { Role, User } from "@prisma/client"
 import { prisma } from "../.."
 import {
   UserAdminUpdateRequest,
   userAdminUpdateValidator,
 } from "../../validators/admin/users-validator"
+import {
+  authMiddleware,
+  authMiddlewareAdmin,
+} from "../../middlewares/auth-middleware"
 import Joi from "joi"
 
 export const adminUsersRouter = Router()
@@ -71,6 +71,32 @@ adminUsersRouter.patch(
         },
       })
       res.send({ message: "User updated", data: updatedUser })
+    } catch (error) {
+      res.status(500).send({ message: "Something went wrong" })
+    }
+  }
+)
+
+adminUsersRouter.delete(
+  "/:id",
+  authMiddleware,
+  authMiddlewareAdmin,
+  async (req: Request, res: Response) => {
+    const user: User | null = await prisma.user.findUnique({
+      where: {
+        id: Number(req.params.id),
+      },
+    })
+    if (!user) {
+      return res.status(404).send({ message: "User not found" })
+    }
+    try {
+      const deletedUser: User = await prisma.user.delete({
+        where: {
+          id: user.id,
+        },
+      })
+      res.send({ message: "User deleted", user: deletedUser })
     } catch (error) {
       res.status(500).send({ message: "Something went wrong" })
     }

@@ -77,6 +77,22 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
   }
 })
 
+usersRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const user: User | null = await prisma.user.findUnique({
+      where: {
+        id: req.user?.id,
+      },
+    })
+    if (!user) {
+      return res.status(404).send({ message: "User not found" })
+    }
+    res.send({ user: user })
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong" })
+  }
+})
+
 usersRouter.get(
   "/logout",
   authMiddleware,
@@ -94,36 +110,45 @@ usersRouter.get(
   }
 )
 
-usersRouter.patch(
-  "/update",
-  authMiddleware,
-  async (req: Request, res: Response) => {
-    const validation: Joi.ValidationResult<UserUpdateRequest> =
-      userUpdateValidator.validate(req.body)
-    if (validation.error) {
-      res
-        .status(400)
-        .send(generateValidationErrorMessage(validation.error.details))
-      return
-    }
-    if (validation.value.password) {
-      validation.value.password = await hash(validation.value.password, 10)
-    }
-    try {
-      const updatedUser = await prisma.user.update({
-        where: {
-          id: req.user?.id,
-        },
-        data: {
-          firstName: validation.value.firstName,
-          lastName: validation.value.lastName,
-          email: validation.value.email,
-          password: validation.value.password,
-        },
-      })
-      res.send({ message: "User updated", data: updatedUser })
-    } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
-    }
+usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
+  const validation: Joi.ValidationResult<UserUpdateRequest> =
+    userUpdateValidator.validate(req.body)
+  if (validation.error) {
+    res
+      .status(400)
+      .send(generateValidationErrorMessage(validation.error.details))
+    return
   }
-)
+  if (validation.value.password) {
+    validation.value.password = await hash(validation.value.password, 10)
+  }
+  try {
+    const updatedUser: User = await prisma.user.update({
+      where: {
+        id: req.user?.id,
+      },
+      data: {
+        firstName: validation.value.firstName,
+        lastName: validation.value.lastName,
+        email: validation.value.email,
+        password: validation.value.password,
+      },
+    })
+    res.send({ message: "User updated", data: updatedUser })
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong" })
+  }
+})
+
+usersRouter.delete("/", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const deletedUser: User = await prisma.user.delete({
+      where: {
+        id: req.user?.id,
+      },
+    })
+    res.send({ message: "User deleted", user: deletedUser })
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong" })
+  }
+})
