@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres-db:
@@ -16,7 +16,7 @@ services:
     container_name: adminer
     ports:
       - "8080:8080"
-      
+
 volumes:
   postgres-data:
     driver: local
