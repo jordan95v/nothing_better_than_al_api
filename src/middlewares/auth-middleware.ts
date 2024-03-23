@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express"
 import { verify } from "jsonwebtoken"
-import { Token, User } from "@prisma/client"
+import { Role, Token, User } from "@prisma/client"
 import { prisma } from ".."
 
 interface TokenWithUser extends Token {
@@ -41,12 +41,12 @@ export const authMiddleware = async (
   })
 }
 
-export const authMiddlewawreAdmin = async (
+export const authMiddlewareAdmin = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (req.user?.role !== "ADMIN") {
+  if (req.user?.role !== Role.ADMIN) {
     return res
       .status(403)
       .send({ message: "You are not allowed to access this resource" })

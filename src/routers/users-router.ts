@@ -4,20 +4,20 @@ import {
   userLoginValidator,
   UserSignupRequest,
   UserLoginRequest,
-} from "../validators/user-validator"
+  userUpdateValidator,
+  UserUpdateRequest,
+} from "../validators/users-validator"
 import { compare, hash } from "bcrypt"
 import { sign } from "jsonwebtoken"
 import { prisma } from ".."
 import Joi from "joi"
 import { User } from "@prisma/client"
-import {
-  authMiddleware,
-  authMiddlewawreAdmin,
-} from "../middlewares/auth-middleware"
+import { authMiddleware } from "../middlewares/auth-middleware"
+import { generateValidationErrorMessage } from "../validators/generate-validation-message"
 
-export const userRouter = Router()
+export const usersRouter = Router()
 
-userRouter.post("/signup", async (req: Request, res: Response) => {
+usersRouter.post("/signup", async (req: Request, res: Response) => {
   const validation: Joi.ValidationResult<UserSignupRequest> =
     userSignupValidator.validate(req.body)
   if (validation.error) {
@@ -39,7 +39,7 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
   }
 })
 
-userRouter.post("/login", async (req: Request, res: Response) => {
+usersRouter.post("/login", async (req: Request, res: Response) => {
   const validation: Joi.ValidationResult<UserLoginRequest> =
     userLoginValidator.validate(req.body)
   if (validation.error) {
@@ -77,7 +77,7 @@ userRouter.post("/login", async (req: Request, res: Response) => {
   }
 })
 
-userRouter.get(
+usersRouter.get(
   "/logout",
   authMiddleware,
   async (req: Request, res: Response) => {
@@ -94,12 +94,36 @@ userRouter.get(
   }
 )
 
-userRouter.get(
-  "/",
+usersRouter.patch(
+  "/update",
   authMiddleware,
-  authMiddlewawreAdmin,
   async (req: Request, res: Response) => {
-    const users: User[] = await prisma.user.findMany()
-    res.send({ users: users })
+    const validation: Joi.ValidationResult<UserUpdateRequest> =
+      userUpdateValidator.validate(req.body)
+    if (validation.error) {
+      res
+        .status(400)
+        .send(generateValidationErrorMessage(validation.error.details))
+      return
+    }
+    if (validation.value.password) {
+      validation.value.password = await hash(validation.value.password, 10)
+    }
+    try {
+      const updatedUser = await prisma.user.update({
+        where: {
+          id: req.user?.id,
+        },
+        data: {
+          firstName: validation.value.firstName,
+          lastName: validation.value.lastName,
+          email: validation.value.email,
+          password: validation.value.password,
+        },
+      })
+      res.send({ message: "User updated", data: updatedUser })
+    } catch (error) {
+      res.status(500).send({ message: "Something went wrong" })
+    }
   }
 )
