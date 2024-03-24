@@ -10,6 +10,7 @@ import {
   authMiddlewareAdmin,
 } from "../../middlewares/auth-middleware"
 import Joi from "joi"
+import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
 
 export const adminUsersRouter = Router()
 
@@ -29,11 +30,9 @@ adminUsersRouter.get(
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
     const user: User | null = await prisma.user.findUnique({
-      where: {
-        id: Number(req.params.id),
-      },
+      where: { id: Number(req.params.id) },
     })
-    if (!user) {
+    if (user === null) {
       return res.status(404).send({ message: "User not found" })
     }
     res.send({ user: user })
@@ -48,21 +47,21 @@ adminUsersRouter.patch(
     const validation: Joi.ValidationResult<UserAdminUpdateRequest> =
       userAdminUpdateValidator.validate(req.body)
     if (validation.error) {
-      return res.status(400).send({ message: validation.error.message })
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
     }
     const user: User | null = await prisma.user.findUnique({
       where: {
         id: Number(req.params.id),
       },
     })
-    if (!user) {
+    if (user === null) {
       return res.status(404).send({ message: "User not found" })
     }
     try {
       const updatedUser: User = await prisma.user.update({
-        where: {
-          id: user.id,
-        },
+        where: { id: user.id },
         data: {
           email: validation.value.email,
           firstName: validation.value.firstName,
@@ -87,14 +86,12 @@ adminUsersRouter.delete(
         id: Number(req.params.id),
       },
     })
-    if (!user) {
+    if (user === null) {
       return res.status(404).send({ message: "User not found" })
     }
     try {
       const deletedUser: User = await prisma.user.delete({
-        where: {
-          id: user.id,
-        },
+        where: { id: user.id },
       })
       res.send({ message: "User deleted", user: deletedUser })
     } catch (error) {

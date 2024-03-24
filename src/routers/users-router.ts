@@ -21,7 +21,9 @@ usersRouter.post("/signup", async (req: Request, res: Response) => {
   const validation: Joi.ValidationResult<UserSignupRequest> =
     userSignupValidator.validate(req.body)
   if (validation.error) {
-    return res.status(400).send({ message: validation.error.message })
+    return res.status(400).send({
+      errors: generateValidationErrorMessage(validation.error.details),
+    })
   }
   const hashedPassword: string = await hash(req.body.password, 10)
   try {
@@ -43,15 +45,15 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
   const validation: Joi.ValidationResult<UserLoginRequest> =
     userLoginValidator.validate(req.body)
   if (validation.error) {
-    return res.status(400).send({ message: validation.error.message })
+    return res.status(400).send({
+      errors: generateValidationErrorMessage(validation.error.details),
+    })
   }
   try {
     const user: User | null = await prisma.user.findUnique({
-      where: {
-        email: validation.value.email,
-      },
+      where: { email: validation.value.email },
     })
-    if (!user) {
+    if (user === null) {
       return res.status(401).send({ message: "Invalid email or password" })
     }
     const passwordMatch: boolean = await compare(
@@ -66,10 +68,7 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
       expiresIn: "1d",
     })
     await prisma.token.create({
-      data: {
-        token,
-        userId: user.id,
-      },
+      data: { token, userId: user.id },
     })
     res.send({ message: "Logged in", token: token })
   } catch (error) {
@@ -80,11 +79,9 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
 usersRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   try {
     const user: User | null = await prisma.user.findUnique({
-      where: {
-        id: req.user?.id,
-      },
+      where: { id: req.user?.id },
     })
-    if (!user) {
+    if (user === null) {
       return res.status(404).send({ message: "User not found" })
     }
     res.send({ user: user })
@@ -99,9 +96,7 @@ usersRouter.get(
   async (req: Request, res: Response) => {
     try {
       await prisma.token.deleteMany({
-        where: {
-          userId: req.user?.id,
-        },
+        where: { userId: req.user?.id },
       })
       res.send({ message: "Logged out" })
     } catch (error) {
@@ -114,19 +109,16 @@ usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
   const validation: Joi.ValidationResult<UserUpdateRequest> =
     userUpdateValidator.validate(req.body)
   if (validation.error) {
-    res
-      .status(400)
-      .send(generateValidationErrorMessage(validation.error.details))
-    return
+    return res.status(400).send({
+      errors: generateValidationErrorMessage(validation.error.details),
+    })
   }
   if (validation.value.password) {
     validation.value.password = await hash(validation.value.password, 10)
   }
   try {
     const updatedUser: User = await prisma.user.update({
-      where: {
-        id: req.user?.id,
-      },
+      where: { id: req.user?.id },
       data: {
         firstName: validation.value.firstName,
         lastName: validation.value.lastName,
@@ -143,9 +135,7 @@ usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
 usersRouter.delete("/", authMiddleware, async (req: Request, res: Response) => {
   try {
     const deletedUser: User = await prisma.user.delete({
-      where: {
-        id: req.user?.id,
-      },
+      where: { id: req.user?.id },
     })
     res.send({ message: "User deleted", user: deletedUser })
   } catch (error) {

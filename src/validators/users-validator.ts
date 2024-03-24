@@ -1,4 +1,3 @@
-import { Role } from "@prisma/client"
 import Joi from "joi"
 
 export interface UserSignupRequest {
@@ -13,7 +12,7 @@ export const userSignupValidator = Joi.object<UserSignupRequest>({
   lastName: Joi.string().required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
-})
+}).options({ abortEarly: false })
 
 export interface UserLoginRequest {
   email: string
@@ -23,7 +22,7 @@ export interface UserLoginRequest {
 export const userLoginValidator = Joi.object<UserLoginRequest>({
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
-})
+}).options({ abortEarly: false })
 
 export interface UserUpdateRequest {
   email?: string
@@ -37,4 +36,4 @@ export const userUpdateValidator = Joi.object<UserUpdateRequest>({
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),
   password: Joi.string().min(8).optional(),
-})
+}).options({ abortEarly: false })

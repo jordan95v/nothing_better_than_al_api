@@ -13,28 +13,20 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   const authHeader: string | undefined = req.headers.authorization
-  if (!authHeader) {
-    return res.status(401).send({ message: "Authorization header is required" })
-  }
-  const token: string = authHeader.split(" ")[1]
-  if (!token) {
-    return res.status(401).send({ message: "Token is required" })
+  const token: string = authHeader?.split(" ")[1] ?? ""
+  if (!authHeader || !token) {
+    return res.status(401).send({ message: "Bearer token not provided" })
   }
   const dbToken: TokenWithUser | null = await prisma.token.findUnique({
-    where: {
-      token,
-    },
-    include: {
-      user: true,
-    },
+    where: { token },
+    include: { user: true },
   })
-  if (!dbToken) {
+  if (dbToken === null) {
     return res.status(401).send({ message: "Invalid token" })
   }
-  const secret: string = process.env.JWT_SECRET ?? "secret"
-  verify(token, secret, (error, user) => {
+  verify(token, process.env.JWT_SECRET ?? "secret", (error) => {
     if (error) {
-      return res.status(401).send({ message: "Invalid token" })
+      return res.status(401).send({ message: "Invalid is not valid" })
     }
     req.user = dbToken.user
     next()
@@ -47,9 +39,7 @@ export const authMiddlewareAdmin = async (
   next: NextFunction
 ) => {
   if (req.user?.role !== Role.ADMIN) {
-    return res
-      .status(403)
-      .send({ message: "You are not allowed to access this resource" })
+    return res.status(403).send({ message: "Unauthorized" })
   }
   next()
 }
