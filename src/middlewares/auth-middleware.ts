@@ -26,7 +26,7 @@ export const authMiddleware = async (
   }
   verify(token, process.env.JWT_SECRET ?? "secret", (error) => {
     if (error) {
-      return res.status(401).send({ message: "Invalid is not valid" })
+      return res.status(401).send({ message: "Token is not valid / expired." })
     }
     req.user = dbToken.user
     next()

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express"
-import { Role, User } from "@prisma/client"
+import { User } from "@prisma/client"
 import { prisma } from "../.."
 import {
   UserAdminUpdateRequest,
@@ -11,6 +11,11 @@ import {
 } from "../../middlewares/auth-middleware"
 import Joi from "joi"
 import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
+import {
+  PrismaError,
+  generatePrismaErrorMessage,
+} from "../../validators/admin/generate-prisma-error-message"
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 
 export const adminUsersRouter = Router()
 
@@ -62,15 +67,15 @@ adminUsersRouter.patch(
     try {
       const updatedUser: User = await prisma.user.update({
         where: { id: user.id },
-        data: {
-          email: validation.value.email,
-          firstName: validation.value.firstName,
-          lastName: validation.value.lastName,
-          role: validation.value.role === "ADMIN" ? Role.ADMIN : Role.USER,
-        },
+        data: { ...validation.value },
       })
       res.send({ message: "User updated", data: updatedUser })
     } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        const prismaError: PrismaError = generatePrismaErrorMessage(error)
+        res.status(prismaError.status).send({ message: prismaError.message })
+        return
+      }
       res.status(500).send({ message: "Something went wrong" })
     }
   }

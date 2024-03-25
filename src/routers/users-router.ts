@@ -119,12 +119,7 @@ usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
   try {
     const updatedUser: User = await prisma.user.update({
       where: { id: req.user?.id },
-      data: {
-        firstName: validation.value.firstName,
-        lastName: validation.value.lastName,
-        email: validation.value.email,
-        password: validation.value.password,
-      },
+      data: { ...validation.value },
     })
     res.send({ message: "User updated", data: updatedUser })
   } catch (error) {

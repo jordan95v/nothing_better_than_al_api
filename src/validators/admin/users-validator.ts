@@ -5,12 +5,14 @@ export interface UserAdminUpdateRequest {
   email?: string
   firstName?: string
   lastName?: string
-  role?: string
+  role?: Role
 }
 
 export const userAdminUpdateValidator = Joi.object<UserAdminUpdateRequest>({
   email: Joi.string().email().optional(),
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),
-  role: Joi.string().valid(Role.ADMIN, Role.USER).optional(),
+  role: Joi.string()
+    .valid(...Object.values(Role))
+    .optional(),
 })
