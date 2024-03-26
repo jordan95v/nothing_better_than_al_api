@@ -94,8 +94,21 @@ model Session {
   @@map("sessions")
 }
 
+enum FilmType {
+  ACTION
+  ADVENTURE
+  COMEDY
+  DRAMA
+  FANTASY
+  HORROR
+  MYSTERY
+  ROMANCE
+  THRILLER
+}
+
 model Film {
   id          Int      @id @default(autoincrement())
+  type        FilmType
   title       String
   description String
   duration    Int

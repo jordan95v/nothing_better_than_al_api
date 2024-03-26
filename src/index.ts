@@ -5,6 +5,8 @@ import { adminUsersRouter } from "./routers/admin/users-router"
 import { PrismaClient, User } from "@prisma/client"
 import { roomsRouter } from "./routers/rooms-router"
 import { roomsAdminRouter } from "./routers/admin/rooms-router"
+import { filmRouter } from "./routers/films-router"
+import { filmAdminRouter } from "./routers/admin/films-router"
 
 export const prisma: PrismaClient = new PrismaClient()
 
@@ -30,8 +32,10 @@ async function main(port: number = 3000): Promise<void> {
   app.use("/healthcheck", healthRouter)
   app.use("/users", usersRouter)
   app.use("/admin/users", adminUsersRouter)
-  app.use("/admin/rooms", roomsAdminRouter)
   app.use("/rooms", roomsRouter)
+  app.use("/admin/rooms", roomsAdminRouter)
+  app.use("/films", filmRouter)
+  app.use("/admin/films", filmAdminRouter)
 
   app.listen(port, () => {
     console.log("Server started at http://localhost:3000")
