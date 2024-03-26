@@ -184,7 +184,7 @@ sessionsAdminRouter.delete(
       await prisma.session.delete({
         where: { id },
       })
-      res.status(204).send("Session deleted.")
+      res.status(200).send("Session deleted.")
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)

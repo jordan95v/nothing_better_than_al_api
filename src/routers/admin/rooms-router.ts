@@ -12,7 +12,7 @@ import {
 } from "../../validators/admin/rooms-validator"
 import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
 import { prisma } from "../.."
-import Joi, { valid } from "joi"
+import Joi from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
   HttpError,
@@ -39,7 +39,7 @@ roomsAdminRouter.post(
       const room: Room = await prisma.room.create({
         data: { ...validation.value, basePrice },
       })
-      return res.send({ message: "Room created", data: room })
+      return res.status(200).send({ message: "Room created", data: room })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
@@ -69,7 +69,7 @@ roomsAdminRouter.patch(
         where: { id: id },
         data: { ...validation.value },
       })
-      res.send({ message: "Room updated", data: room })
+      res.status(200).send({ message: "Room updated", data: room })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
@@ -91,7 +91,7 @@ roomsAdminRouter.delete(
       await prisma.room.delete({
         where: { id: id },
       })
-      res.send({ message: "Room deleted" })
+      res.status(200).send({ message: "Room deleted" })
     } catch (error) {
       res.status(500).send({ message: "Something went wrong" })
     }

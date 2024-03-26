@@ -37,7 +37,7 @@ filmsAdminRouter.post(
       const film: Film = await prisma.film.create({
         data: { ...validation.value },
       })
-      return res.send({ message: "Film created", data: film })
+      return res.status(200).send({ message: "Film created", data: film })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
@@ -66,7 +66,7 @@ filmsAdminRouter.patch(
         where: { id: parseInt(req.params.id) },
         data: { ...validation.value },
       })
-      return res.send({ message: "Film updated", data: film })
+      return res.status(200).send({ message: "Film updated", data: film })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
@@ -87,7 +87,7 @@ filmsAdminRouter.delete(
       await prisma.film.delete({
         where: { id: parseInt(req.params.id) },
       })
-      return res.send({ message: "Film deleted" })
+      return res.status(200).send({ message: "Film deleted" })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)

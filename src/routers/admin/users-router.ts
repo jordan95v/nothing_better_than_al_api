@@ -25,7 +25,7 @@ usersAdminRouter.get(
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
     const users: User[] = await prisma.user.findMany()
-    res.send(users)
+    res.status(200).send(users)
   }
 )
 
@@ -40,7 +40,7 @@ usersAdminRouter.get(
     if (user === null) {
       return res.status(404).send({ message: "User not found" })
     }
-    res.send(user)
+    res.status(200).send(user)
   }
 )
 
@@ -69,7 +69,7 @@ usersAdminRouter.patch(
         where: { id: user.id },
         data: { ...validation.value },
       })
-      res.send({ message: "User updated", data: updatedUser })
+      res.status(200).send({ message: "User updated", data: updatedUser })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
@@ -98,7 +98,7 @@ usersAdminRouter.delete(
       const deletedUser: User = await prisma.user.delete({
         where: { id: user.id },
       })
-      res.send({ message: "User deleted", user: deletedUser })
+      res.status(200).send({ message: "User deleted", user: deletedUser })
     } catch (error) {
       res.status(500).send({ message: "Something went wrong" })
     }

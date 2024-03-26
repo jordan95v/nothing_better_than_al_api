@@ -45,7 +45,7 @@ filmsRouter.get("/:id", authMiddleware, async (req: Request, res: Response) => {
     if (film === null) {
       return res.status(404).send({ message: "Film not found" })
     }
-    res.send(film)
+    res.status(200).send(film)
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }

@@ -35,7 +35,7 @@ usersRouter.post("/signup", async (req: Request, res: Response) => {
         password: hashedPassword,
       },
     })
-    res.send({ message: "User created", data: user })
+    res.status(201).send({ message: "User created", data: user })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
@@ -70,7 +70,7 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
     await prisma.token.create({
       data: { token, userId: user.id },
     })
-    res.send({ message: "Logged in", token: token })
+    res.status(200).send({ message: "Logged in", token: token })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
@@ -84,7 +84,7 @@ usersRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
     if (user === null) {
       return res.status(404).send({ message: "User not found" })
     }
-    res.send({ user: user })
+    res.status(200).send({ user: user })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
@@ -98,7 +98,7 @@ usersRouter.get(
       await prisma.token.deleteMany({
         where: { userId: req.user?.id },
       })
-      res.send({ message: "Logged out" })
+      res.status(200).send({ message: "Logged out" })
     } catch (error) {
       res.status(500).send({ message: "Something went wrong" })
     }
@@ -121,7 +121,7 @@ usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
       where: { id: req.user?.id },
       data: { ...validation.value },
     })
-    res.send({ message: "User updated", data: updatedUser })
+    res.status(200).send({ message: "User updated", data: updatedUser })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
@@ -132,7 +132,7 @@ usersRouter.delete("/", authMiddleware, async (req: Request, res: Response) => {
     const deletedUser: User = await prisma.user.delete({
       where: { id: req.user?.id },
     })
-    res.send({ message: "User deleted", user: deletedUser })
+    res.status(200).send({ message: "User deleted", user: deletedUser })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
