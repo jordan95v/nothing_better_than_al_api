@@ -4,7 +4,8 @@
   "description": "REST API for the Nothing Better Than AL cinema project",
   "main": "index.js",
   "scripts": {
-    "start:dev": "npx nodemon -e ts --exec ts-node src/index.ts"
+    "start:dev": "nodemon -e ts --exec ts-node src/index.ts",
+    "prisma:migrate": "prisma migrate dev --name"
   },
   "keywords": [],
   "author": "Jordan DUFRESNE, Romain LANCELOT, Steven CHOUK",
