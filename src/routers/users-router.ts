@@ -34,7 +34,7 @@ usersRouter.post("/signup", async (req: Request, res: Response) => {
   }
   const hashedPassword: string = await hash(req.body.password, 10)
   try {
-    const user = await prisma.user.create({
+    const user: User = await prisma.user.create({
       data: {
         firstName: validation.value.firstName,
         lastName: validation.value.lastName,
@@ -187,7 +187,7 @@ usersRouter.get(
   authMiddleware,
   async (req: Request, res: Response) => {
     try {
-      const transactions = await prisma.transaction.findMany({
+      const transactions: Transaction[] = await prisma.transaction.findMany({
         where: { userId: req.user.id },
         include: { ticket: true },
       })
