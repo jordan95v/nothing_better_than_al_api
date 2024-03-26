@@ -1,6 +1,11 @@
 import { RoomType } from "@prisma/client"
 import Joi from "joi"
 
+export const roomBasePrice = {
+  [RoomType.STANDARD]: 10,
+  [RoomType.IMAX]: 16,
+}
+
 export interface RoomCreateRequest {
   name: string
   number: number

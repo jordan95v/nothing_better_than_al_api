@@ -48,9 +48,9 @@ model Token {
 
 model Ticket {
   id        Int      @id @default(autoincrement())
-  session   Session  @relation(fields: [sessionId], references: [id])
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: NoAction)
   userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -73,6 +73,7 @@ model Room {
   capacity    Int
   handicap    Boolean
   maintenance Boolean
+  basePrice   Float
   sessions    Session[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -83,12 +84,11 @@ model Room {
 model Session {
   id          Int      @id @default(autoincrement())
   startAt     DateTime 
-  film        Film     @relation(fields: [filmId], references: [id])
+  film        Film     @relation(fields: [filmId], references: [id], onDelete: NoAction)
   filmId      Int
-  room        Room     @relation(fields: [roomId], references: [id])
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId      Int
   tickets     Ticket[]
-  basePrice   Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

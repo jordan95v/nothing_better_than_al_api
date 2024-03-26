@@ -17,7 +17,9 @@ import {
   MAX_SESSION_START_AT,
   MIN_SESSION_START_AT,
   SessionCreateRequest,
+  SessionUpdateRequest,
   sessionCreateValidator,
+  sessionUpdateValidator,
 } from "../../validators/admin/sessions-validator"
 
 export const sessionsAdminRouter = Router()
@@ -43,6 +45,9 @@ const checkSessionOverlap = async (
   request: SessionCreateRequest,
   film: Film
 ): Promise<boolean> => {
+  if (request.startAt === undefined) {
+    return false
+  }
   const foundSession = await prisma.session.findMany({
     where: { roomId: request.roomId },
     include: { film: true },
@@ -68,7 +73,7 @@ const checkSessionOverlap = async (
 }
 
 const checks = async (request: SessionCreateRequest): Promise<void> => {
-  request.startAt.setHours(request.startAt.getHours() + 1)
+  request.startAt?.setHours(request.startAt?.getHours() + 1)
   const foundFilm: Film | null = await prisma.film.findUnique({
     where: { id: request.filmId },
   })
@@ -81,11 +86,13 @@ const checks = async (request: SessionCreateRequest): Promise<void> => {
   if (foundRoom === null) {
     throw new SessionError("Room not found")
   }
-  if (checkHours(request.startAt) === false) {
-    throw new SessionError("Invalid hour")
-  }
-  if (await checkSessionOverlap(request, foundFilm)) {
-    throw new SessionError("Session is overlaping.")
+  if (request.startAt !== undefined) {
+    if (checkHours(request.startAt) === false) {
+      throw new SessionError("Invalid hour")
+    }
+    if (await checkSessionOverlap(request, foundFilm)) {
+      throw new SessionError("Session is overlaping.")
+    }
   }
 }
 
@@ -115,6 +122,74 @@ sessionsAdminRouter.post(
       }
       if (error instanceof SessionError) {
         return res.status(400).send({ message: error.message })
+      }
+      res.status(500).send({ message: "Something went wrong." })
+    }
+  }
+)
+
+sessionsAdminRouter.patch(
+  "/:id",
+  authMiddleware,
+  authMiddlewareAdmin,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id)
+    const validation: Joi.ValidationResult<SessionUpdateRequest> =
+      sessionUpdateValidator.validate(req.body)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
+    try {
+      const session: Session | null = await prisma.session.findUnique({
+        where: { id },
+      })
+      if (session === null) {
+        return res.status(404).send({ message: "Session not found." })
+      }
+      const updatedSession: SessionCreateRequest = {
+        startAt: validation.value.startAt || session.startAt,
+        filmId: validation.value.filmId || session.filmId,
+        roomId: validation.value.roomId || session.roomId,
+      }
+      await checks(updatedSession)
+      const newSession = await prisma.session.update({
+        where: { id },
+        data: updatedSession,
+      })
+      res.status(200).send(newSession)
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
+        res.status(prismaError.status).send({ message: prismaError.message })
+        return
+      }
+      if (error instanceof SessionError) {
+        return res.status(400).send({ message: error.message })
+      }
+      console.log(error)
+      res.status(500).send({ message: "Something went wrong." })
+    }
+  }
+)
+
+sessionsAdminRouter.delete(
+  "/:id",
+  authMiddleware,
+  authMiddlewareAdmin,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id)
+    try {
+      await prisma.session.delete({
+        where: { id },
+      })
+      res.status(204).send("Session deleted.")
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
+        res.status(prismaError.status).send({ message: prismaError.message })
+        return
       }
       res.status(500).send({ message: "Something went wrong." })
     }

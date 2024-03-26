@@ -6,17 +6,19 @@ import {
 import {
   RoomCreateRequest,
   RoomUpdateRequest,
+  roomBasePrice,
   roomCreateValidator,
   roomUpdateValidator,
 } from "../../validators/admin/rooms-validator"
 import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
 import { prisma } from "../.."
-import Joi from "joi"
+import Joi, { valid } from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
   HttpError,
   generatePrismaErrorMessage,
 } from "../../validators/generate-error-message"
+import { Room } from "@prisma/client"
 
 export const roomsAdminRouter = Router()
 
@@ -33,8 +35,9 @@ roomsAdminRouter.post(
       })
     }
     try {
-      const room = await prisma.room.create({
-        data: { ...validation.value },
+      const basePrice: number = roomBasePrice[validation.value.type]
+      const room: Room = await prisma.room.create({
+        data: { ...validation.value, basePrice },
       })
       return res.send({ message: "Room created", data: room })
     } catch (error) {

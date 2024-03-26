@@ -8,12 +8,22 @@ export interface SessionCreateRequest {
   startAt: Date
   filmId: number
   roomId: number
-  basePrice: number
 }
 
 export const sessionCreateValidator = Joi.object<SessionCreateRequest>({
   startAt: Joi.date().required().iso(),
   filmId: Joi.number().required(),
   roomId: Joi.number().required(),
-  basePrice: Joi.number().required(),
+}).options({ abortEarly: false })
+
+export interface SessionUpdateRequest {
+  startAt?: Date
+  filmId?: number
+  roomId?: number
+}
+
+export const sessionUpdateValidator = Joi.object<SessionUpdateRequest>({
+  startAt: Joi.date().optional().iso(),
+  filmId: Joi.number().optional(),
+  roomId: Joi.number().optional(),
 }).options({ abortEarly: false })
