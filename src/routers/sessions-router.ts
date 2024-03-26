@@ -5,8 +5,6 @@ import {
   sessionGetValidator,
 } from "../validators/sessions-validator"
 import Joi from "joi"
-import { MAINTENANCE_TIME } from "../validators/admin/sessions-validator"
-import { Session } from "@prisma/client"
 import { SessionWithFilm } from "../models"
 
 export const sessionsRouter = Router()
@@ -24,17 +22,7 @@ sessionsRouter.get("/", async (req: Request, res: Response) => {
       },
       include: { film: true, room: true },
     })
-    let sessionsResponse: Session[] = []
-    for (const session of sessions) {
-      const endAt: Date = new Date(session.startAt)
-      endAt.setMinutes(
-        endAt.getMinutes() + session.film.duration + MAINTENANCE_TIME
-      )
-      if (endAt <= validator.value.endAt) {
-        sessionsResponse.push(session)
-      }
-    }
-    res.status(200).send(sessionsResponse)
+    res.status(200).send(sessions)
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
