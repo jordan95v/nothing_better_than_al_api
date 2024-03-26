@@ -57,6 +57,7 @@ model Transaction {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   amount    Float
+  type      TransactionType
   ticket    Ticket?
   createdAt DateTime @default(now())
 

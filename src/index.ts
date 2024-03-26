@@ -7,12 +7,16 @@ export const prisma: PrismaClient = new PrismaClient()
 declare global {
   namespace Express {
     interface Request {
-      user?: User
+      user: User
     }
     interface Response {
-      user?: User
+      user: User
     }
   }
+}
+
+export interface AuthenticatedRequest extends Request {
+  user: User
 }
 
 /**

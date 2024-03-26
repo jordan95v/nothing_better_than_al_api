@@ -35,7 +35,7 @@ export const authMiddlewareAdmin = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (req.user?.role !== Role.ADMIN) {
+  if (req.user.role !== Role.ADMIN) {
     return res.status(403).send({ message: "Unauthorized" })
   }
   next()

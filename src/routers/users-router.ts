@@ -13,7 +13,7 @@ import { compare, hash } from "bcrypt"
 import { sign } from "jsonwebtoken"
 import { prisma } from ".."
 import Joi from "joi"
-import { User } from "@prisma/client"
+import { Transaction, TransactionType, User } from "@prisma/client"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { generateValidationErrorMessage } from "../validators/generate-validation-message"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
@@ -42,7 +42,7 @@ usersRouter.post("/signup", async (req: Request, res: Response) => {
         password: hashedPassword,
       },
     })
-    res.status(201).send({ message: "User created", data: user })
+    res.status(201).send({ message: "User created", user: user })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
@@ -86,7 +86,7 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
 usersRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   try {
     const user: User | null = await prisma.user.findUnique({
-      where: { id: req.user?.id },
+      where: { id: req.user.id },
     })
     if (user === null) {
       return res.status(404).send({ message: "User not found" })
@@ -103,7 +103,7 @@ usersRouter.get(
   async (req: Request, res: Response) => {
     try {
       await prisma.token.deleteMany({
-        where: { userId: req.user?.id },
+        where: { userId: req.user.id },
       })
       res.status(200).send({ message: "Logged out" })
     } catch (error) {
@@ -125,10 +125,10 @@ usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
   }
   try {
     const updatedUser: User = await prisma.user.update({
-      where: { id: req.user?.id },
+      where: { id: req.user.id },
       data: { ...validation.value },
     })
-    res.status(200).send({ message: "User updated", data: updatedUser })
+    res.status(200).send({ message: "User updated", user: updatedUser })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
   }
@@ -137,7 +137,7 @@ usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
 usersRouter.delete("/", authMiddleware, async (req: Request, res: Response) => {
   try {
     const deletedUser: User = await prisma.user.delete({
-      where: { id: req.user?.id },
+      where: { id: req.user.id },
     })
     res.status(200).send({ message: "User deleted", user: deletedUser })
   } catch (error) {
@@ -158,16 +158,44 @@ usersRouter.post(
     }
     try {
       const updatedUser: User = await prisma.user.update({
-        where: { id: req.user?.id },
+        where: { id: req.user.id },
         data: { money: { increment: validation.value.amount } },
       })
-      res.status(200).send({ message: "Deposit successful", data: updatedUser })
+      const transaction: Transaction = await prisma.transaction.create({
+        data: {
+          amount: validation.value.amount,
+          userId: req.user.id,
+          type: TransactionType.DEPOSIT,
+        },
+      })
+      res
+        .status(200)
+        .send({ message: "Deposit successful", user: updatedUser, transaction })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }
+      res.status(500).send({ message: "Something went wrong" })
+    }
+  }
+)
+
+usersRouter.get(
+  "/transactions",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const transactions = await prisma.transaction.findMany({
+        where: { userId: req.user.id },
+        include: { ticket: true },
+      })
+      res.status(200).send({
+        numberOfTransactions: transactions.length,
+        transactions: transactions,
+      })
+    } catch (error) {
       res.status(500).send({ message: "Something went wrong" })
     }
   }
