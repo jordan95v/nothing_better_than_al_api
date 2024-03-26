@@ -13,6 +13,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ALTER DATABASE postgres SET timezone TO 'Europe/Paris';
+
 enum Role {
   ADMIN
   USER
@@ -80,8 +82,7 @@ model Room {
 
 model Session {
   id          Int      @id @default(autoincrement())
-  startAt     DateTime
-  endAt       DateTime
+  startAt     DateTime 
   film        Film     @relation(fields: [filmId], references: [id])
   filmId      Int
   room        Room     @relation(fields: [roomId], references: [id])

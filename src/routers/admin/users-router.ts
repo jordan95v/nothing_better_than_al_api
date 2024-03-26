@@ -12,24 +12,24 @@ import {
 import Joi from "joi"
 import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
 import {
-  PrismaError,
+  HttpError,
   generatePrismaErrorMessage,
-} from "../../validators/admin/generate-prisma-error-message"
+} from "../../validators/generate-error-message"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 
-export const adminUsersRouter = Router()
+export const usersAdminRouter = Router()
 
-adminUsersRouter.get(
+usersAdminRouter.get(
   "/",
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
     const users: User[] = await prisma.user.findMany()
-    res.send({ users: users })
+    res.send(users)
   }
 )
 
-adminUsersRouter.get(
+usersAdminRouter.get(
   "/:id",
   authMiddleware,
   authMiddlewareAdmin,
@@ -40,11 +40,11 @@ adminUsersRouter.get(
     if (user === null) {
       return res.status(404).send({ message: "User not found" })
     }
-    res.send({ user: user })
+    res.send(user)
   }
 )
 
-adminUsersRouter.patch(
+usersAdminRouter.patch(
   "/:id",
   authMiddleware,
   authMiddlewareAdmin,
@@ -72,7 +72,7 @@ adminUsersRouter.patch(
       res.send({ message: "User updated", data: updatedUser })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: PrismaError = generatePrismaErrorMessage(error)
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }
@@ -81,7 +81,7 @@ adminUsersRouter.patch(
   }
 )
 
-adminUsersRouter.delete(
+usersAdminRouter.delete(
   "/:id",
   authMiddleware,
   authMiddlewareAdmin,

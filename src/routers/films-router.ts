@@ -6,9 +6,9 @@ import { FilmGetRequest, filmGetValidator } from "../validators/films-validator"
 import Joi from "joi"
 import { generateValidationErrorMessage } from "../validators/generate-validation-message"
 
-export const filmRouter = Router()
+export const filmsRouter = Router()
 
-filmRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
+filmsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   const validation: Joi.ValidationResult<FilmGetRequest> =
     filmGetValidator.validate(req.query)
   if (validation.error) {
@@ -36,7 +36,7 @@ filmRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   }
 })
 
-filmRouter.get("/:id", authMiddleware, async (req: Request, res: Response) => {
+filmsRouter.get("/:id", authMiddleware, async (req: Request, res: Response) => {
   const id: number = Number(req.params.id)
   try {
     const film: Film | null = await prisma.film.findUnique({

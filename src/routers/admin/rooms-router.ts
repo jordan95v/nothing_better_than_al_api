@@ -14,9 +14,9 @@ import { prisma } from "../.."
 import Joi from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
-  PrismaError,
+  HttpError,
   generatePrismaErrorMessage,
-} from "../../validators/admin/generate-prisma-error-message"
+} from "../../validators/generate-error-message"
 
 export const roomsAdminRouter = Router()
 
@@ -39,7 +39,7 @@ roomsAdminRouter.post(
       return res.send({ message: "Room created", data: room })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: PrismaError = generatePrismaErrorMessage(error)
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }
@@ -69,7 +69,7 @@ roomsAdminRouter.patch(
       res.send({ message: "Room updated", data: room })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: PrismaError = generatePrismaErrorMessage(error)
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }

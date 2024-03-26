@@ -1,13 +1,13 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 
-export interface PrismaError {
+export interface HttpError {
   status: number
   message: string
 }
 
 export const generatePrismaErrorMessage = (
   error: PrismaClientKnownRequestError
-): PrismaError => {
+): HttpError => {
   const modelName = error.meta?.modelName
   const field = error.meta?.target
   let errorMessage = ""

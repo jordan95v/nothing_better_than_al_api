@@ -8,9 +8,9 @@ import { prisma } from "../.."
 import Joi from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
-  PrismaError,
+  HttpError,
   generatePrismaErrorMessage,
-} from "../../validators/admin/generate-prisma-error-message"
+} from "../../validators/generate-error-message"
 import { Film } from "@prisma/client"
 import {
   FilmCreateRequest,
@@ -19,9 +19,9 @@ import {
   filmUpdateValidator,
 } from "../../validators/admin/films-validator"
 
-export const filmAdminRouter = Router()
+export const filmsAdminRouter = Router()
 
-filmAdminRouter.post(
+filmsAdminRouter.post(
   "/",
   authMiddleware,
   authMiddlewareAdmin,
@@ -40,7 +40,7 @@ filmAdminRouter.post(
       return res.send({ message: "Film created", data: film })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: PrismaError = generatePrismaErrorMessage(error)
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }
@@ -49,7 +49,7 @@ filmAdminRouter.post(
   }
 )
 
-filmAdminRouter.patch(
+filmsAdminRouter.patch(
   "/:id",
   authMiddleware,
   authMiddlewareAdmin,
@@ -69,7 +69,7 @@ filmAdminRouter.patch(
       return res.send({ message: "Film updated", data: film })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: PrismaError = generatePrismaErrorMessage(error)
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }
@@ -78,7 +78,7 @@ filmAdminRouter.patch(
   }
 )
 
-filmAdminRouter.delete(
+filmsAdminRouter.delete(
   "/:id",
   authMiddleware,
   authMiddlewareAdmin,
@@ -90,7 +90,7 @@ filmAdminRouter.delete(
       return res.send({ message: "Film deleted" })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: PrismaError = generatePrismaErrorMessage(error)
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }
