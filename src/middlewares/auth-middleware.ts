@@ -1,11 +1,8 @@
 import { Request, Response, NextFunction } from "express"
 import { verify } from "jsonwebtoken"
-import { Role, Token, User } from "@prisma/client"
+import { Role } from "@prisma/client"
 import { prisma } from ".."
-
-interface TokenWithUser extends Token {
-  user: User
-}
+import { TokenWithUser } from "../models"
 
 export const authMiddleware = async (
   req: Request,

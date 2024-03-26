@@ -62,7 +62,7 @@ filmsAdminRouter.patch(
       })
     }
     try {
-      const film = await prisma.film.update({
+      const film: Film = await prisma.film.update({
         where: { id: parseInt(req.params.id) },
         data: { ...validation.value },
       })

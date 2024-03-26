@@ -5,7 +5,7 @@ services:
     image: postgres:latest
     container_name: postgres-db
     ports:
-      - "5432:5432"
+      - 5432:5432
     env_file: .env
     restart: always
     volumes:
@@ -15,7 +15,7 @@ services:
     image: adminer
     container_name: adminer
     ports:
-      - "8080:8080"
+      - 8080:8080
 
 volumes:
   postgres-data:

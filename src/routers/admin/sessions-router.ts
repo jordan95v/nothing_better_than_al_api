@@ -11,7 +11,7 @@ import {
   HttpError,
   generatePrismaErrorMessage,
 } from "../../validators/generate-error-message"
-import { Session, Film } from "@prisma/client"
+import { Session, Film, Room } from "@prisma/client"
 import {
   MAINTENANCE_TIME,
   MAX_SESSION_START_AT,
@@ -21,12 +21,9 @@ import {
   sessionCreateValidator,
   sessionUpdateValidator,
 } from "../../validators/admin/sessions-validator"
+import { SessionWithFilm } from "../../models"
 
 export const sessionsAdminRouter = Router()
-
-interface SessionWithFilm extends Session {
-  film: Film
-}
 
 class SessionError extends Error {
   constructor(message: string) {
@@ -37,7 +34,7 @@ class SessionError extends Error {
 }
 
 const checkHours = (date: Date): boolean => {
-  const hour = date.getHours()
+  const hour: number = date.getHours()
   return hour >= MIN_SESSION_START_AT && hour <= MAX_SESSION_START_AT
 }
 
@@ -48,18 +45,18 @@ const checkSessionOverlap = async (
   if (request.startAt === undefined) {
     return false
   }
-  const foundSession = await prisma.session.findMany({
+  const foundSession: SessionWithFilm[] = await prisma.session.findMany({
     where: { roomId: request.roomId },
     include: { film: true },
   })
-  const newSessionStart = new Date(request.startAt)
-  const newSessionEnd = new Date(request.startAt)
+  const newSessionStart: Date = new Date(request.startAt)
+  const newSessionEnd: Date = new Date(request.startAt)
   newSessionEnd.setMinutes(
     newSessionEnd.getMinutes() + film.duration + MAINTENANCE_TIME
   )
   for (const session of foundSession) {
-    const sessionStart = new Date(session.startAt)
-    const sessionEnd = new Date(session.startAt)
+    const sessionStart: Date = new Date(session.startAt)
+    const sessionEnd: Date = new Date(session.startAt)
     sessionEnd.setMinutes(sessionEnd.getMinutes() + session.film.duration)
     if (
       (newSessionStart >= sessionStart && newSessionStart < sessionEnd) ||
@@ -80,7 +77,7 @@ const checks = async (request: SessionCreateRequest): Promise<void> => {
   if (foundFilm === null) {
     throw new SessionError("Film not found")
   }
-  const foundRoom = await prisma.room.findUnique({
+  const foundRoom: Room | null = await prisma.room.findUnique({
     where: { id: request.roomId },
   })
   if (foundRoom === null) {
@@ -133,7 +130,7 @@ sessionsAdminRouter.patch(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id)
+    const id: number = parseInt(req.params.id)
     const validation: Joi.ValidationResult<SessionUpdateRequest> =
       sessionUpdateValidator.validate(req.body)
     if (validation.error) {
@@ -154,7 +151,7 @@ sessionsAdminRouter.patch(
         roomId: validation.value.roomId || session.roomId,
       }
       await checks(updatedSession)
-      const newSession = await prisma.session.update({
+      const newSession: Session = await prisma.session.update({
         where: { id },
         data: updatedSession,
       })
@@ -179,7 +176,7 @@ sessionsAdminRouter.delete(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id)
+    const id: number = parseInt(req.params.id)
     try {
       await prisma.session.delete({
         where: { id },
