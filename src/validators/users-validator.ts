@@ -37,3 +37,11 @@ export const userUpdateValidator = Joi.object<UserUpdateRequest>({
   lastName: Joi.string().optional(),
   password: Joi.string().min(8).optional(),
 }).options({ abortEarly: false })
+
+export interface UserDepositRequest {
+  amount: number
+}
+
+export const userDepositValidator = Joi.object<UserDepositRequest>({
+  amount: Joi.number().required().min(1),
+}).options({ abortEarly: false })

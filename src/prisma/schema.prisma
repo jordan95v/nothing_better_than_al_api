@@ -21,17 +21,18 @@ enum Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  firstName String
-  lastName  String
-  password  String
-  role      Role     @default(USER)
-  tokens    Token[]
-  tickets   Ticket[]
-  money     Float    @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  firstName    String
+  lastName     String
+  password     String
+  role         Role          @default(USER)
+  tokens       Token[]
+  tickets      Ticket[]
+  money        Float         @default(0)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@map("users")
 }
@@ -46,14 +47,32 @@ model Token {
   @@map("tokens")
 }
 
-model Ticket {
+enum TransactionType {
+  DEPOSIT
+  BUY
+}
+
+model Transaction {
   id        Int      @id @default(autoincrement())
-  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: NoAction)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+  amount    Float
+  ticket    Ticket?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@map("transactions")
+}
+
+model Ticket {
+  id            Int         @id @default(autoincrement())
+  session       Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId     Int
+  user          User        @relation(fields: [userId], references: [id], onDelete: NoAction)
+  userId        Int
+  transactionId Int         @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: NoAction)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@map("tickets")
 }
@@ -64,9 +83,9 @@ enum RoomType {
 }
 
 model Room {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  number      Int      @unique
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  number      Int       @unique
   description String
   images      String[]
   type        RoomType
@@ -75,22 +94,22 @@ model Room {
   maintenance Boolean
   basePrice   Float
   sessions    Session[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("rooms")
 }
 
 model Session {
-  id          Int      @id @default(autoincrement())
-  startAt     DateTime 
-  film        Film     @relation(fields: [filmId], references: [id], onDelete: NoAction)
-  filmId      Int
-  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId      Int
-  tickets     Ticket[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  startAt   DateTime
+  film      Film     @relation(fields: [filmId], references: [id], onDelete: NoAction)
+  filmId    Int
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId    Int
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("sessions")
 }
@@ -108,15 +127,15 @@ enum FilmType {
 }
 
 model Film {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   type        FilmType
   title       String
   description String
   duration    Int
   image       String
   sessions    Session[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("films")
 }

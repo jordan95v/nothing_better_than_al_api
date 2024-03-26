@@ -6,6 +6,8 @@ import {
   UserLoginRequest,
   userUpdateValidator,
   UserUpdateRequest,
+  userDepositValidator,
+  UserDepositRequest,
 } from "../validators/users-validator"
 import { compare, hash } from "bcrypt"
 import { sign } from "jsonwebtoken"
@@ -14,6 +16,11 @@ import Joi from "joi"
 import { User } from "@prisma/client"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { generateValidationErrorMessage } from "../validators/generate-validation-message"
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
+import {
+  HttpError,
+  generatePrismaErrorMessage,
+} from "../validators/generate-error-message"
 
 export const usersRouter = Router()
 
@@ -137,3 +144,31 @@ usersRouter.delete("/", authMiddleware, async (req: Request, res: Response) => {
     res.status(500).send({ message: "Something went wrong" })
   }
 })
+
+usersRouter.post(
+  "/deposit",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    const validation: Joi.ValidationResult<UserDepositRequest> =
+      userDepositValidator.validate(req.body)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
+    try {
+      const updatedUser: User = await prisma.user.update({
+        where: { id: req.user?.id },
+        data: { money: { increment: validation.value.amount } },
+      })
+      res.status(200).send({ message: "Deposit successful", data: updatedUser })
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        const prismaError: HttpError = generatePrismaErrorMessage(error)
+        res.status(prismaError.status).send({ message: prismaError.message })
+        return
+      }
+      res.status(500).send({ message: "Something went wrong" })
+    }
+  }
+)
