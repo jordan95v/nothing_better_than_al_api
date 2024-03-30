@@ -31,8 +31,9 @@ async function main(port: number = 3000): Promise<void> {
   app.use("/", router)
   app.use(invalidPathHandler)
 
-  app.listen(port, () => {
-    console.log("Server started at http://localhost:3000")
+  const host: string = process.env.HOST || "localhost"
+  app.listen(port, host, () => {
+    console.log(`Server started at http://${host}:${port}`)
   })
 }
 
