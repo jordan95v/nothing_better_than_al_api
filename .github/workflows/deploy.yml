@@ -20,4 +20,4 @@ jobs:
           key: ${{ secrets.SSHKEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           port: ${{ secrets.PORT }}
-          script: "docker compose -f ~/nothing_better_than_al/docker-compose.yml up -d --build"
+          script: "docker compose -f ~/nothing_better_than_al_api/docker-compose.yml up -d --build"
