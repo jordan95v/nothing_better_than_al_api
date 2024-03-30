@@ -16,6 +16,7 @@ import {
   generatePrismaErrorMessage,
 } from "../../validators/generate-error-message"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
+import { UserAll } from "../../models"
 
 export const usersAdminRouter = Router()
 
@@ -41,6 +42,22 @@ usersAdminRouter.get(
       return res.status(404).send({ message: "User not found" })
     }
     res.status(200).send(user)
+  }
+)
+
+usersAdminRouter.get(
+  "/:id/transactions",
+  authMiddleware,
+  authMiddlewareAdmin,
+  async (req: Request, res: Response) => {
+    const user: UserAll | null = await prisma.user.findUnique({
+      where: { id: Number(req.params.id) },
+      include: { transactions: true, tickets: true, tokens: true },
+    })
+    if (user === null) {
+      return res.status(404).send({ message: "User not found" })
+    }
+    res.status(200).send(user.transactions)
   }
 )
 

@@ -14,7 +14,9 @@ export const roomsRouter = Router()
 
 roomsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const rooms: Room[] | null = await prisma.room.findMany()
+    const rooms: Room[] | null = await prisma.room.findMany({
+      where: { maintenance: false },
+    })
     res.status(200).send(rooms)
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
@@ -27,10 +29,14 @@ roomsRouter.get(
   async (req: Request, res: Response) => {
     try {
       const room: Room | null = await prisma.room.findUnique({
-        where: {
-          number: parseInt(req.params.number),
-        },
+        where: { number: parseInt(req.params.number) },
       })
+      if (room === null) {
+        return res.status(404).send({ message: "Room not found" })
+      }
+      if (room.maintenance === true) {
+        return res.status(400).send({ message: "Room in maintenance" })
+      }
       res.status(200).send(room)
     } catch (error) {
       res.status(500).send({ message: "Something went wrong" })

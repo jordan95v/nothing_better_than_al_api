@@ -29,6 +29,7 @@ filmsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
           lte: validation.value.maxDuration,
         },
       },
+      include: { sessions: true },
     })
     res.status(200).send(films)
   } catch (error) {
@@ -41,6 +42,7 @@ filmsRouter.get("/:id", authMiddleware, async (req: Request, res: Response) => {
   try {
     const film: Film | null = await prisma.film.findUnique({
       where: { id: id },
+      include: { sessions: true },
     })
     if (film === null) {
       return res.status(404).send({ message: "Film not found" })

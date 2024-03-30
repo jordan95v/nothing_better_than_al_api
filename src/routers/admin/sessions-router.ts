@@ -21,7 +21,7 @@ import {
   sessionCreateValidator,
   sessionUpdateValidator,
 } from "../../validators/admin/sessions-validator"
-import { SessionWithFilm } from "../../models"
+import { SessionWithAll } from "../../models"
 
 export const sessionsAdminRouter = Router()
 
@@ -33,9 +33,17 @@ class SessionError extends Error {
   }
 }
 
-const checkHours = (date: Date): boolean => {
-  const hour: number = date.getHours()
-  return hour >= MIN_SESSION_START_AT && hour <= MAX_SESSION_START_AT
+const checkHours = (date: Date, film: Film): boolean => {
+  const startHour: number = date.getHours()
+  const endHour: Date = new Date(date)
+  endHour.setMinutes(endHour.getMinutes() + film.duration + MAINTENANCE_TIME)
+  return (
+    !(startHour < MIN_SESSION_START_AT || startHour > MAX_SESSION_START_AT) &&
+    !(
+      endHour.getHours() < MIN_SESSION_START_AT ||
+      endHour.getHours() > MAX_SESSION_START_AT
+    )
+  )
 }
 
 const checkSessionOverlap = async (
@@ -45,9 +53,9 @@ const checkSessionOverlap = async (
   if (request.startAt === undefined) {
     return false
   }
-  const foundSession: SessionWithFilm[] = await prisma.session.findMany({
+  const foundSession: SessionWithAll[] = await prisma.session.findMany({
     where: { roomId: request.roomId },
-    include: { film: true },
+    include: { film: true, room: true, tickets: true },
   })
   const newSessionStart: Date = new Date(request.startAt)
   const newSessionEnd: Date = new Date(request.startAt)
@@ -84,7 +92,7 @@ const checks = async (request: SessionCreateRequest): Promise<void> => {
     throw new SessionError("Room not found")
   }
   if (request.startAt !== undefined) {
-    if (checkHours(request.startAt) === false) {
+    if (checkHours(request.startAt, foundFilm) === false) {
       throw new SessionError("Invalid hour")
     }
     if (await checkSessionOverlap(request, foundFilm)) {

@@ -5,7 +5,7 @@ import {
   sessionGetValidator,
 } from "../validators/sessions-validator"
 import Joi from "joi"
-import { SessionWithFilm, SessionWithRoom } from "../models"
+import { SessionWithAll } from "../models"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { Transaction, TransactionType } from "@prisma/client"
 
@@ -15,14 +15,14 @@ sessionsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   const validator: Joi.ValidationResult<SessionGetRequest> =
     sessionGetValidator.validate(req.query)
   try {
-    const sessions: SessionWithFilm[] = await prisma.session.findMany({
+    const sessions: SessionWithAll[] = await prisma.session.findMany({
       where: {
         startAt: {
           gte: validator.value.startAt,
           lte: validator.value.endAt,
         },
       },
-      include: { film: true, room: true },
+      include: { film: true, room: true, tickets: true },
     })
     res.status(200).send(sessions)
   } catch (error) {
@@ -34,9 +34,9 @@ sessionsRouter.post(
   "/:id/buy",
   authMiddleware,
   async (req: Request, res: Response) => {
-    const session: SessionWithRoom | null = await prisma.session.findUnique({
+    const session: SessionWithAll | null = await prisma.session.findUnique({
       where: { id: parseInt(req.params.id) },
-      include: { room: true },
+      include: { film: true, room: true, tickets: true },
     })
     if (session === null) {
       res.status(404).send({ message: "Session not found" })
@@ -44,6 +44,10 @@ sessionsRouter.post(
     }
     if (session.room.basePrice > req.user.money) {
       res.status(400).send({ message: "Not enough money" })
+      return
+    }
+    if (session.room.capacity <= session.tickets.length) {
+      res.status(400).send({ message: "Room is full" })
       return
     }
     try {
