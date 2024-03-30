@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  app:
+  nothing_better_than_al_api:
     build: .
     container_name: nothing_better_than_al_api
     entrypoint: ["./docker-entrypoint.sh"]
@@ -9,7 +9,7 @@ services:
     restart: unless-stopped
     networks:
       - caddy
-      - nothing_better_than_al_api
+      - nothing_better_than_al_api_network
 
   postgres-db:
     image: postgres:latest
@@ -20,7 +20,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
     command: postgres -c 'timezone=Europe/Paris'
     networks:
-      - nothing_better_than_al_api
+      - nothing_better_than_al_api_network
 
 volumes:
   postgres-data:
@@ -29,4 +29,4 @@ volumes:
 networks:
   caddy:
     external: true
-  nothing_better_than_al_api:
+  nothing_better_than_al_api_network:

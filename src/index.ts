@@ -24,14 +24,16 @@ export interface AuthenticatedRequest extends Request {
  * Starts the server on the specified port.
  * @param port - The port number to listen on. Defaults to 3000 if not provided.
  */
-async function main(port: number = 3000): Promise<void> {
+async function main(): Promise<void> {
   const app: Express = express()
   app.use(express.json())
 
   app.use("/", router)
   app.use(invalidPathHandler)
 
-  const host: string = process.env.HOST || "localhost"
+  const host: string = process.env.API_HOST || "localhost"
+  const port = parseInt(process.env.API_PORT || "3000")
+
   app.listen(port, host, () => {
     console.log(`Server started at http://${host}:${port}`)
   })
