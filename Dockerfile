@@ -2,6 +2,6 @@ FROM node:latest
 
 WORKDIR /app
 COPY . .
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 
 RUN npm install && npx tsc
