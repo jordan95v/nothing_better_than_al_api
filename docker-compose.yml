@@ -6,6 +6,7 @@ services:
     container_name: nothing_better_than_al_api
     env_file: .env
     restart: unless-stopped
+    entrypoint: docker-entrypoint.sh
     networks:
       - caddy
       - nothing_better_than_al_api
