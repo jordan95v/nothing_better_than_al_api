@@ -44,6 +44,7 @@ usersRouter.post("/signup", async (req: Request, res: Response) => {
     })
     res.status(201).send({ message: "User created", user: user })
   } catch (error) {
+    console.log(error)
     res.status(500).send({ message: "Something went wrong" })
   }
 })
