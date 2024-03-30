@@ -38,10 +38,10 @@ export const userUpdateValidator = Joi.object<UserUpdateRequest>({
   password: Joi.string().min(8).optional(),
 }).options({ abortEarly: false })
 
-export interface UserDepositRequest {
+export interface UserOperationRequest {
   amount: number
 }
 
-export const userDepositValidator = Joi.object<UserDepositRequest>({
+export const userOperationValidator = Joi.object<UserOperationRequest>({
   amount: Joi.number().required().min(1),
 }).options({ abortEarly: false })

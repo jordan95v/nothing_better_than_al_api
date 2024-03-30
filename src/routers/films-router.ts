@@ -2,9 +2,14 @@ import { Router, Request, Response } from "express"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { prisma } from ".."
 import { Film } from "@prisma/client"
-import { FilmGetRequest, filmGetValidator } from "../validators/films-validator"
+import {
+  FilmGetRequest,
+  FilmIdGetRequest,
+  filmGetValidator,
+  filmIdGetValidator,
+} from "../validators/films-validator"
 import Joi from "joi"
-import { generateValidationErrorMessage } from "../validators/generate-validation-message"
+import { generateValidationErrorMessage } from "../errors/generate-validation-message"
 
 export const filmsRouter = Router()
 
@@ -28,6 +33,14 @@ filmsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
           gte: validation.value.minDuration,
           lte: validation.value.maxDuration,
         },
+        sessions: {
+          some: {
+            startAt: {
+              gte: validation.value.startDate,
+              lte: validation.value.endDate,
+            },
+          },
+        },
       },
       include: { sessions: true },
     })
@@ -38,10 +51,26 @@ filmsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
 })
 
 filmsRouter.get("/:id", authMiddleware, async (req: Request, res: Response) => {
-  const id: number = Number(req.params.id)
+  const validation: Joi.ValidationResult<FilmIdGetRequest> =
+    filmIdGetValidator.validate({ ...req.params, ...req.query })
+  if (validation.error) {
+    return res.status(400).send({
+      errors: generateValidationErrorMessage(validation.error.details),
+    })
+  }
   try {
     const film: Film | null = await prisma.film.findUnique({
-      where: { id: id },
+      where: {
+        id: validation.value.id,
+        sessions: {
+          some: {
+            startAt: {
+              gte: validation.value.startDate,
+              lte: validation.value.endDate,
+            },
+          },
+        },
+      },
       include: { sessions: true },
     })
     if (film === null) {

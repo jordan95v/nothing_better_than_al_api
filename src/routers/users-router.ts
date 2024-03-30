@@ -6,8 +6,8 @@ import {
   UserLoginRequest,
   userUpdateValidator,
   UserUpdateRequest,
-  userDepositValidator,
-  UserDepositRequest,
+  userOperationValidator,
+  UserOperationRequest,
 } from "../validators/users-validator"
 import { compare, hash } from "bcrypt"
 import { sign } from "jsonwebtoken"
@@ -15,12 +15,12 @@ import { prisma } from ".."
 import Joi from "joi"
 import { Transaction, TransactionType, User } from "@prisma/client"
 import { authMiddleware } from "../middlewares/auth-middleware"
-import { generateValidationErrorMessage } from "../validators/generate-validation-message"
+import { generateValidationErrorMessage } from "../errors/generate-validation-message"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
   HttpError,
   generatePrismaErrorMessage,
-} from "../validators/generate-error-message"
+} from "../errors/generate-error-message"
 
 export const usersRouter = Router()
 
@@ -149,8 +149,8 @@ usersRouter.post(
   "/deposit",
   authMiddleware,
   async (req: Request, res: Response) => {
-    const validation: Joi.ValidationResult<UserDepositRequest> =
-      userDepositValidator.validate(req.body)
+    const validation: Joi.ValidationResult<UserOperationRequest> =
+      userOperationValidator.validate(req.body)
     if (validation.error) {
       return res.status(400).send({
         errors: generateValidationErrorMessage(validation.error.details),
@@ -177,6 +177,49 @@ usersRouter.post(
         res.status(prismaError.status).send({ message: prismaError.message })
         return
       }
+      res.status(500).send({ message: "Something went wrong" })
+    }
+  }
+)
+
+usersRouter.post(
+  "/withdraw",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    const validation: Joi.ValidationResult<UserOperationRequest> =
+      userOperationValidator.validate(req.body)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
+    try {
+      const user: User | null = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      })
+      if (user === null) {
+        return res.status(404).send({ message: "User not found" })
+      }
+      if (user.money < validation.value.amount) {
+        return res.status(400).send({ message: "Insufficient funds" })
+      }
+      const updatedUser: User = await prisma.user.update({
+        where: { id: req.user.id },
+        data: { money: { decrement: validation.value.amount } },
+      })
+      const transaction: Transaction = await prisma.transaction.create({
+        data: {
+          amount: validation.value.amount,
+          userId: req.user.id,
+          type: TransactionType.WITHDRAW,
+        },
+      })
+      res.status(200).send({
+        message: "Withdrawal successful",
+        user: updatedUser,
+        transaction,
+      })
+    } catch (error) {
       res.status(500).send({ message: "Something went wrong" })
     }
   }

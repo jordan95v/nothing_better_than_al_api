@@ -16,13 +16,22 @@ export const sessionCreateValidator = Joi.object<SessionCreateRequest>({
   roomId: Joi.number().required(),
 }).options({ abortEarly: false })
 
-export interface SessionUpdateRequest {
+export interface SessionIdAdminRequest {
+  id: number
+}
+
+export const sessionIdAdminValidator = Joi.object<SessionIdAdminRequest>({
+  id: Joi.number().required(),
+}).options({ abortEarly: false })
+
+export interface SessionUpdateRequest extends SessionIdAdminRequest {
   startAt?: Date
   filmId?: number
   roomId?: number
 }
 
 export const sessionUpdateValidator = Joi.object<SessionUpdateRequest>({
+  id: Joi.number().required(),
   startAt: Joi.date().optional().iso(),
   filmId: Joi.number().optional(),
   roomId: Joi.number().optional(),

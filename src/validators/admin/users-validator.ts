@@ -1,7 +1,15 @@
 import { Role } from "@prisma/client"
-import Joi from "joi"
+import Joi, { extend } from "joi"
 
-export interface UserAdminUpdateRequest {
+export interface UserIdAdminRequest {
+  id: number
+}
+
+export const userIdAdminValidator = Joi.object<UserIdAdminRequest>({
+  id: Joi.number().required(),
+})
+
+export interface UserAdminUpdateRequest extends UserIdAdminRequest {
   email?: string
   firstName?: string
   lastName?: string
@@ -9,6 +17,7 @@ export interface UserAdminUpdateRequest {
 }
 
 export const userAdminUpdateValidator = Joi.object<UserAdminUpdateRequest>({
+  id: Joi.number().required(),
   email: Joi.string().email().optional(),
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),

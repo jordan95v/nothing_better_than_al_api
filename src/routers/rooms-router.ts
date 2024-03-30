@@ -2,13 +2,17 @@ import { Router, Request, Response } from "express"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { prisma } from ".."
 import { Room, Session } from "@prisma/client"
-import { RoomGetRequest, roomGetValidator } from "../validators/rooms-validator"
+import {
+  RoomIdGetRequest,
+  roomIdGetValidator,
+} from "../validators/rooms-validator"
 import Joi from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
   HttpError,
   generatePrismaErrorMessage,
-} from "../validators/generate-error-message"
+} from "../errors/generate-error-message"
+import { generateValidationErrorMessage } from "../errors/generate-validation-message"
 
 export const roomsRouter = Router()
 
@@ -27,9 +31,16 @@ roomsRouter.get(
   "/:number",
   authMiddleware,
   async (req: Request, res: Response) => {
+    const validation: Joi.ValidationResult<RoomIdGetRequest> =
+      roomIdGetValidator.validate({ ...req.params, ...req.query })
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
     try {
       const room: Room | null = await prisma.room.findUnique({
-        where: { number: parseInt(req.params.number) },
+        where: { number: validation.value.number },
       })
       if (room === null) {
         return res.status(404).send({ message: "Room not found" })
@@ -45,16 +56,21 @@ roomsRouter.get(
 )
 
 roomsRouter.get("/:number/sessions", async (req: Request, res: Response) => {
-  const validator: Joi.ValidationResult<RoomGetRequest> =
-    roomGetValidator.validate(req.query)
+  const validation: Joi.ValidationResult<RoomIdGetRequest> =
+    roomIdGetValidator.validate({ ...req.params, ...req.query })
+  if (validation.error) {
+    return res.status(400).send({
+      errors: generateValidationErrorMessage(validation.error.details),
+    })
+  }
   try {
     const sessions: Session[] = await prisma.session.findMany({
       where: {
         startAt: {
-          gte: validator.value.startDate,
-          lte: validator.value.endDate,
+          gte: validation.value.startDate,
+          lte: validation.value.endDate,
         },
-        roomId: parseInt(req.params.number),
+        roomId: validation.value.number,
       },
       include: { film: true },
     })

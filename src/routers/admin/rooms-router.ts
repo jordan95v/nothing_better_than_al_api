@@ -5,19 +5,21 @@ import {
 } from "../../middlewares/auth-middleware"
 import {
   RoomCreateRequest,
+  RoomIdAdminRequest,
   RoomUpdateRequest,
   roomBasePrice,
   roomCreateValidator,
+  roomIdAdminValidator,
   roomUpdateValidator,
 } from "../../validators/admin/rooms-validator"
-import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
+import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
 import { prisma } from "../.."
 import Joi from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
   HttpError,
   generatePrismaErrorMessage,
-} from "../../validators/generate-error-message"
+} from "../../errors/generate-error-message"
 import { Room } from "@prisma/client"
 
 export const roomsAdminRouter = Router()
@@ -56,9 +58,8 @@ roomsAdminRouter.patch(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
-    const id: number = Number(req.params.id)
     const validation: Joi.ValidationResult<RoomUpdateRequest> =
-      roomUpdateValidator.validate(req.body)
+      roomUpdateValidator.validate({ ...req.params, ...req.body })
     if (validation.error) {
       return res.status(400).send({
         errors: generateValidationErrorMessage(validation.error.details),
@@ -66,8 +67,17 @@ roomsAdminRouter.patch(
     }
     try {
       const room = await prisma.room.update({
-        where: { id: id },
-        data: { ...validation.value },
+        where: { id: validation.value.id },
+        data: {
+          name: validation.value.name,
+          number: validation.value.number,
+          description: validation.value.description,
+          images: validation.value.images,
+          type: validation.value.type,
+          capacity: validation.value.capacity,
+          handicap: validation.value.handicap,
+          maintenance: validation.value.maintenance,
+        },
       })
       res.status(200).send({ message: "Room updated", data: room })
     } catch (error) {
@@ -86,10 +96,16 @@ roomsAdminRouter.delete(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
-    const id: number = Number(req.params.id)
+    const validation: Joi.ValidationResult<RoomIdAdminRequest> =
+      roomIdAdminValidator.validate(req.params)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
     try {
       await prisma.room.delete({
-        where: { id: id },
+        where: { id: validation.value.id },
       })
       res.status(200).send({ message: "Room deleted" })
     } catch (error) {

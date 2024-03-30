@@ -3,22 +3,24 @@ import {
   authMiddleware,
   authMiddlewareAdmin,
 } from "../../middlewares/auth-middleware"
-import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
+import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
 import { prisma } from "../.."
 import Joi from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
   HttpError,
   generatePrismaErrorMessage,
-} from "../../validators/generate-error-message"
+} from "../../errors/generate-error-message"
 import { Session, Film, Room } from "@prisma/client"
 import {
   MAINTENANCE_TIME,
   MAX_SESSION_START_AT,
   MIN_SESSION_START_AT,
   SessionCreateRequest,
+  SessionIdAdminRequest,
   SessionUpdateRequest,
   sessionCreateValidator,
+  sessionIdAdminValidator,
   sessionUpdateValidator,
 } from "../../validators/admin/sessions-validator"
 import { SessionWithAll } from "../../models"
@@ -138,9 +140,8 @@ sessionsAdminRouter.patch(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
-    const id: number = parseInt(req.params.id)
     const validation: Joi.ValidationResult<SessionUpdateRequest> =
-      sessionUpdateValidator.validate(req.body)
+      sessionUpdateValidator.validate({ ...req.params, ...req.body })
     if (validation.error) {
       return res.status(400).send({
         errors: generateValidationErrorMessage(validation.error.details),
@@ -148,7 +149,7 @@ sessionsAdminRouter.patch(
     }
     try {
       const session: Session | null = await prisma.session.findUnique({
-        where: { id },
+        where: { id: validation.value.id },
       })
       if (session === null) {
         return res.status(404).send({ message: "Session not found." })
@@ -160,7 +161,7 @@ sessionsAdminRouter.patch(
       }
       await checks(updatedSession)
       const newSession: Session = await prisma.session.update({
-        where: { id },
+        where: { id: validation.value.id },
         data: updatedSession,
       })
       res.status(200).send(newSession)
@@ -184,10 +185,16 @@ sessionsAdminRouter.delete(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
-    const id: number = parseInt(req.params.id)
+    const validation: Joi.ValidationResult<SessionIdAdminRequest> =
+      sessionIdAdminValidator.validate(req.params)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
     try {
       await prisma.session.delete({
-        where: { id },
+        where: { id: validation.value.id },
       })
       res.status(200).send("Session deleted.")
     } catch (error) {

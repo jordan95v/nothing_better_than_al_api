@@ -3,18 +3,20 @@ import {
   authMiddleware,
   authMiddlewareAdmin,
 } from "../../middlewares/auth-middleware"
-import { generateValidationErrorMessage } from "../../validators/generate-validation-message"
+import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
 import { prisma } from "../.."
 import Joi from "joi"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import {
   HttpError,
   generatePrismaErrorMessage,
-} from "../../validators/generate-error-message"
+} from "../../errors/generate-error-message"
 import { Film } from "@prisma/client"
 import {
   FilmCreateRequest,
   filmCreateValidator,
+  FilmIdAdminRequest,
+  filmIdAdminValidator,
   FilmUpdateRequest,
   filmUpdateValidator,
 } from "../../validators/admin/films-validator"
@@ -55,7 +57,7 @@ filmsAdminRouter.patch(
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
     const validation: Joi.ValidationResult<FilmUpdateRequest> =
-      filmUpdateValidator.validate(req.body)
+      filmUpdateValidator.validate({ ...req.params, ...req.body })
     if (validation.error) {
       return res.status(400).send({
         errors: generateValidationErrorMessage(validation.error.details),
@@ -63,8 +65,14 @@ filmsAdminRouter.patch(
     }
     try {
       const film: Film = await prisma.film.update({
-        where: { id: parseInt(req.params.id) },
-        data: { ...validation.value },
+        where: { id: validation.value.id },
+        data: {
+          title: validation.value.title,
+          type: validation.value.type,
+          description: validation.value.description,
+          duration: validation.value.duration,
+          image: validation.value.image,
+        },
       })
       return res.status(200).send({ message: "Film updated", data: film })
     } catch (error) {
@@ -83,9 +91,16 @@ filmsAdminRouter.delete(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
+    const validation: Joi.ValidationResult<FilmIdAdminRequest> =
+      filmIdAdminValidator.validate(req.params)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
     try {
       await prisma.film.delete({
-        where: { id: parseInt(req.params.id) },
+        where: { id: validation.value.id },
       })
       return res.status(200).send({ message: "Film deleted" })
     } catch (error) {

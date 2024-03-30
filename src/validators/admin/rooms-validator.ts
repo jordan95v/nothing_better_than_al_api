@@ -30,7 +30,15 @@ export const roomCreateValidator = Joi.object<RoomCreateRequest>({
   maintenance: Joi.boolean().required(),
 }).options({ abortEarly: false })
 
-export interface RoomUpdateRequest {
+export interface RoomIdAdminRequest {
+  id: number
+}
+
+export const roomIdAdminValidator = Joi.object<RoomIdAdminRequest>({
+  id: Joi.number().required(),
+}).options({ abortEarly: false })
+
+export interface RoomUpdateRequest extends RoomIdAdminRequest {
   name?: string
   number?: number
   description?: string
@@ -42,6 +50,7 @@ export interface RoomUpdateRequest {
 }
 
 export const roomUpdateValidator = Joi.object<RoomUpdateRequest>({
+  id: Joi.number().required(),
   name: Joi.string().optional(),
   number: Joi.number().optional(),
   description: Joi.string().optional(),

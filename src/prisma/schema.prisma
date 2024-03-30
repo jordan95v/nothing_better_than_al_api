@@ -49,6 +49,7 @@ model Token {
 
 enum TransactionType {
   DEPOSIT
+  WITHDRAW
   BUY
 }
 

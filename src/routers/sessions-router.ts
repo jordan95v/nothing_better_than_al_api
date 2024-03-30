@@ -2,12 +2,15 @@ import { Router, Request, Response } from "express"
 import { prisma } from ".."
 import {
   SessionGetRequest,
+  SessionIdGetRequest,
   sessionGetValidator,
+  sessionIdGetValidator,
 } from "../validators/sessions-validator"
 import Joi from "joi"
 import { SessionWithAll } from "../models"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { Transaction, TransactionType } from "@prisma/client"
+import { generateValidationErrorMessage } from "../errors/generate-validation-message"
 
 export const sessionsRouter = Router()
 
@@ -34,8 +37,15 @@ sessionsRouter.post(
   "/:id/buy",
   authMiddleware,
   async (req: Request, res: Response) => {
+    const validation: Joi.ValidationResult<SessionIdGetRequest> =
+      sessionIdGetValidator.validate({ ...req.params, ...req.query })
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
     const session: SessionWithAll | null = await prisma.session.findUnique({
-      where: { id: parseInt(req.params.id) },
+      where: { id: validation.value.id },
       include: { film: true, room: true, tickets: true },
     })
     if (session === null) {
@@ -58,7 +68,7 @@ sessionsRouter.post(
           type: TransactionType.BUY,
           ticket: {
             create: {
-              sessionId: parseInt(req.params.id),
+              sessionId: validation.value.id,
               userId: req.user.id,
             },
           },

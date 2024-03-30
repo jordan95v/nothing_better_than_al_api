@@ -19,7 +19,15 @@ export const filmCreateValidator = Joi.object<FilmCreateRequest>({
   image: Joi.string().required(),
 }).options({ abortEarly: false })
 
-export interface FilmUpdateRequest {
+export interface FilmIdAdminRequest {
+  id: number
+}
+
+export const filmIdAdminValidator = Joi.object<FilmIdAdminRequest>({
+  id: Joi.number().required(),
+}).options({ abortEarly: false })
+
+export interface FilmUpdateRequest extends FilmIdAdminRequest {
   title?: string
   type?: FilmType
   description?: string
@@ -28,6 +36,7 @@ export interface FilmUpdateRequest {
 }
 
 export const filmUpdateValidator = Joi.object<FilmUpdateRequest>({
+  id: Joi.number().required(),
   title: Joi.string().optional(),
   type: Joi.string()
     .valid(...Object.values(FilmType))
