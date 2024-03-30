@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: nothing_better_than_al_api
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - caddy
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres-db
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    command: postgres -c 'timezone=Europe/Paris'
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  caddy:
+    external: true
