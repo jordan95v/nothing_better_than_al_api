@@ -4,7 +4,7 @@ services:
   app:
     build: .
     container_name: nothing_better_than_al_api
-    command: npx prisma migrate deploy && node dist/index.js
+    entrypoint: ["./docker-entrypoint.sh"]
     env_file: .env
     restart: unless-stopped
     networks:
@@ -28,5 +28,4 @@ volumes:
 
 networks:
   caddy:
-    external: true
   nothing_better_than_al_api:
