@@ -28,4 +28,5 @@ volumes:
 
 networks:
   caddy:
+    external: true
   nothing_better_than_al_api:
