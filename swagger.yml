@@ -1,4 +1,5 @@
-swagger: "2.0"
+openapi: "3.0.0"
+
 info:
   version: "1.0.0"
   title: "Nothing Better Than AL API"
@@ -9,6 +10,63 @@ basePath: "/"
 schemes:
   - https
 
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "The JWT token to authorize the user"
+
+  responses:
+    BearerNotProvidedResponse:
+      description: "Bearer token not provided"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Bearer token not provided"
+
+    UnauthorizedResponse:
+      description: "Unauthorized"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Unauthorized"
+
+    InvalidInputResponse:
+      description: "Invalid input"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              errors:
+                type: "object"
+                example:
+                  {
+                    "field1": "field_1 is required",
+                    "field2": "field2 need to be at least 3 characters long",
+                    "...": "...",
+                  }
+
+    ServerErrorResponse:
+      description: "Server error"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Something went wrong"
 paths:
   /healthcheck:
     get:
@@ -17,12 +75,14 @@ paths:
       responses:
         200:
           description: "Server is running"
-          schema:
-            type: "object"
-            properties:
-              message:
-                type: "string"
-                example: "Server is running"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Server is running"
 
   /users/signup:
     post:
@@ -38,16 +98,20 @@ paths:
       responses:
         201:
           description: "User created"
-          schema:
-            $ref: "#/definitions/SignupResponse"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User created"
+                  user:
+                    $ref: "#/definitions/User"
         400:
-          description: "Invalid input"
-          schema:
-            $ref: "#/definitions/SignupInvalidResponse"
+          $ref: "#/components/responses/InvalidInputResponse"
         500:
-          description: "Server error"
-          schema:
-            $ref: "#/definitions/ServerErrorResponse"
+          $ref: "#/components/responses/ServerErrorResponse"
 
   /users/login:
     post:
@@ -59,27 +123,47 @@ paths:
           description: "User object that needs to be added"
           required: true
           schema:
-            $ref: "#/definitions/LoginBody"
+            type: "object"
+            properties:
+              email:
+                type: "string"
+                example: "johndoe@gmail.com"
+              password:
+                type: "string"
+                example: "password"
       responses:
         200:
           description: "User logged in"
-          schema:
-            $ref: "#/definitions/LoginResponse"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Logged in"
+                  token:
+                    type: "string"
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjIwZjQwZjQwZjQwZjQwZjQwZjQwZjQiLCJpYXQiOjE1OTYwNjQwNzJ9.1"
         400:
-          description: "Invalid email or password"
-          schema:
-            $ref: "#/definitions/LoginInvalidResponse"
+          $ref: "#/components/responses/InvalidInputResponse"
         401:
-          description: "Invalid email or password"
-          schema:
-            $ref: "#/definitions/LoginInvalidResponse"
+          description: "Bad login"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Invalid email or password"
         500:
-          description: "Server error"
-          schema:
-            $ref: "#/definitions/ServerErrorResponse"
+          $ref: "#/components/responses/ServerErrorResponse"
 
   /users/logout:
     get:
+      security:
+        - bearer: []
       summary: "Logout"
       description: "Logout a user"
       responses:
@@ -91,14 +175,12 @@ paths:
               message:
                 type: "string"
                 example: "Logged out"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
         403:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/UnauthorizedResponse"
+          $ref: "#/components/responses/UnauthorizedResponse"
         500:
-          description: "Server error"
-          schema:
-            $ref: "#/definitions/ServerErrorResponse"
+          $ref: "#/components/responses/ServerErrorResponse"
 
 definitions:
   User:
@@ -116,63 +198,3 @@ definitions:
       password:
         type: "string"
         example: "password"
-
-  UnauthorizedResponse:
-    type: "object"
-    properties:
-      message:
-        type: "string"
-        example: "Unauthorized"
-
-  ServerErrorResponse:
-    type: "object"
-    properties:
-      message:
-        type: "string"
-        example: "Something went wrong"
-
-  LoginBody:
-    type: "object"
-    properties:
-      email:
-        type: "string"
-        example: "johndoe@gmail.com"
-      password:
-        type: "string"
-        example: "password"
-
-  LoginResponse:
-    type: "object"
-    properties:
-      message:
-        type: "string"
-        example: "Logged in"
-      token:
-        type: "string"
-        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjI4ZjQ4ZjQ4ZjQ4ZjQ4ZjQ4ZjQ4ZjQiLCJpYXQiOjE1OTYwNjQwNjJ9"
-
-  LoginInvalidResponse:
-    type: "object"
-    properties:
-      message:
-        type: "string"
-        example: "Invalid email or password"
-
-  SignupResponse:
-    type: "object"
-    properties:
-      message:
-        type: "string"
-        example: "User created"
-      user:
-        $ref: "#/definitions/User"
-
-  SignupInvalidResponse:
-    type: "object"
-    properties:
-      errors:
-        type: "object"
-        properties:
-          field:
-            type: "string"
-            example: "Reason of the error"
