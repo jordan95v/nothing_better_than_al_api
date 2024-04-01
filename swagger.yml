@@ -1,0 +1,178 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Nothing Better Than AL API"
+  description: "This is the API for the Nothing Better Than AL cinema project"
+
+host: nodeapi.3630alloperenoel.fr
+basePath: "/"
+schemes:
+  - https
+
+paths:
+  /healthcheck:
+    get:
+      summary: "Healthcheck"
+      description: "Check if the API is up and running"
+      responses:
+        200:
+          description: "Server is running"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Server is running"
+
+  /users/signup:
+    post:
+      summary: "Sign up"
+      description: "Create a new user"
+      parameters:
+        - name: "body"
+          in: "body"
+          description: "User object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        201:
+          description: "User created"
+          schema:
+            $ref: "#/definitions/SignupResponse"
+        400:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/SignupInvalidResponse"
+        500:
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/ServerErrorResponse"
+
+  /users/login:
+    post:
+      summary: "Login"
+      description: "Login a user"
+      parameters:
+        - name: "body"
+          in: "body"
+          description: "User object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginBody"
+      responses:
+        200:
+          description: "User logged in"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        400:
+          description: "Invalid email or password"
+          schema:
+            $ref: "#/definitions/LoginInvalidResponse"
+        401:
+          description: "Invalid email or password"
+          schema:
+            $ref: "#/definitions/LoginInvalidResponse"
+        500:
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/ServerErrorResponse"
+
+  /users/logout:
+    get:
+      summary: "Logout"
+      description: "Logout a user"
+      responses:
+        200:
+          description: "Logged out"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Logged out"
+        403:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/UnauthorizedResponse"
+        500:
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/ServerErrorResponse"
+
+definitions:
+  User:
+    type: "object"
+    properties:
+      firstName:
+        type: "string"
+        example: "John"
+      lastName:
+        type: "string"
+        example: "Doe"
+      email:
+        type: "string"
+        example: "johndoe@gmail.com"
+      password:
+        type: "string"
+        example: "password"
+
+  UnauthorizedResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "Unauthorized"
+
+  ServerErrorResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "Something went wrong"
+
+  LoginBody:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        example: "johndoe@gmail.com"
+      password:
+        type: "string"
+        example: "password"
+
+  LoginResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "Logged in"
+      token:
+        type: "string"
+        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjI4ZjQ4ZjQ4ZjQ4ZjQ4ZjQ4ZjQ4ZjQiLCJpYXQiOjE1OTYwNjQwNjJ9"
+
+  LoginInvalidResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "Invalid email or password"
+
+  SignupResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "User created"
+      user:
+        $ref: "#/definitions/User"
+
+  SignupInvalidResponse:
+    type: "object"
+    properties:
+      errors:
+        type: "object"
+        properties:
+          field:
+            type: "string"
+            example: "Reason of the error"
