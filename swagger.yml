@@ -70,6 +70,8 @@ components:
 paths:
   /healthcheck:
     get:
+      tags:
+        - "Healthcheck"
       summary: "Healthcheck"
       description: "Check if the API is up and running"
       responses:
@@ -86,15 +88,30 @@ paths:
 
   /users/signup:
     post:
+      tags:
+        - "Authentification"
       summary: "Sign up"
       description: "Create a new user"
-      parameters:
-        - name: "body"
-          in: "body"
+      requestBody:
           description: "User object that needs to be added"
           required: true
-          schema:
-            $ref: "#/definitions/User"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  email:
+                    type: "string"
+                    example: "johndoe@gmail.com"
+                  firstName:
+                    type: "string"
+                    example: "John"
+                  lastName:
+                    type: "string"
+                    example: "Doe"
+                  password:
+                    type: "string"
+                    example: "password"
       responses:
         201:
           description: "User created"
@@ -115,22 +132,24 @@ paths:
 
   /users/login:
     post:
+      tags:
+        - "Authentification"
       summary: "Login"
       description: "Login a user"
-      parameters:
-        - name: "body"
-          in: "body"
-          description: "User object that needs to be added"
-          required: true
-          schema:
-            type: "object"
-            properties:
-              email:
-                type: "string"
-                example: "johndoe@gmail.com"
-              password:
-                type: "string"
-                example: "password"
+      requestBody:
+        description: "User credentials to login"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                email:
+                  type: "string"
+                  example: "johndoe@gmail.com"
+                password:
+                  type: "string"
+                  example: "password"
       responses:
         200:
           description: "User logged in"
@@ -148,7 +167,7 @@ paths:
         400:
           $ref: "#/components/responses/InvalidInputResponse"
         401:
-          description: "Bad login"
+          description: "Error while logging in"
           content:
             application/json:
               schema:
@@ -162,6 +181,8 @@ paths:
 
   /users/logout:
     get:
+      tags:
+        - "Authentification"
       security:
         - bearer: []
       summary: "Logout"
@@ -182,19 +203,262 @@ paths:
         500:
           $ref: "#/components/responses/ServerErrorResponse"
 
+  /users:
+    get:
+      tags:
+        - "Users"
+      security:
+        - bearer: []
+      summary: "Get current user"
+      description: "Get the current user"
+      responses:
+        200:
+          description: "Current user"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  user:
+                    $ref: "#/definitions/User"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+
+    patch:
+      tags:
+        - "Users"
+      security:
+        - bearer: []
+      summary: "Update current user"
+      description: "Update the current user"
+      requestBody:
+        description: "User object that needs to be updated, not all fields are required"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                email:
+                  type: "string"
+                  example: "johndoe@gmail.com"
+                firstName:
+                  type: "string"
+                  example: "John"
+                lastName:
+                  type: "string"
+                  example: "Doe"
+                password:
+                  type: "string"
+                  example: "password"
+      responses:
+        200:
+          description: "User updated"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User updated"
+                  user:
+                    $ref: "#/definitions/User"
+        400:
+          $ref: "#/components/responses/InvalidInputResponse"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+    
+    delete:
+      tags:
+        - "Users"
+      security:
+        - bearer: []
+      summary: "Delete current user"
+      description: "Delete the current user"
+      responses:
+        200:
+          description: "User deleted"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User deleted"
+                  user:
+                    $ref: "#/definitions/User"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+
+  /users/deposit:
+    post:
+      tags:
+        - "Users"
+      security:
+        - bearer: []
+      summary: "Deposit successful"
+      description: "Deposit money to the current user"
+      requestBody:
+        description: "Amount to deposit"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                amount:
+                  type: "number"
+                  example: 100
+      responses:
+        200:
+          description: "Money deposited"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Money deposited"
+                  user:
+                    $ref: "#/definitions/User"
+                  transaction:
+                    $ref: "#/definitions/Transaction"
+        400:
+          $ref: "#/components/responses/InvalidInputResponse"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+
+  /users/withdraw:
+    post:
+      tags:
+        - "Users"
+      security:
+        - bearer: []
+      summary: "Withdraw money"
+      description: "Withdraw money from the current user"
+      requestBody:
+        description: "Amount to withdraw"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                amount:
+                  type: "number"
+                  example: 100
+      responses:
+        200:
+          description: "Withdrawal successful"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Money withdrawn"
+                  user:
+                    $ref: "#/definitions/User"
+                  transaction:
+                    $ref: "#/definitions/Transaction"
+        400:
+          $ref: "#/components/responses/InvalidInputResponse"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+
+  /users/transactions:
+    get:
+      tags:
+        - "Users"
+      security:
+        - bearer: []
+      summary: "Get user transactions"
+      description: "Get the current user transactions"
+      responses:
+        200:
+          description: "User transactions"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  numberOfTransactions:
+                    type: "number"
+                    example: 1
+                  transactions:
+                    type: "array"
+                    items:
+                      $ref: "#/definitions/Transaction"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+
 definitions:
   User:
     type: "object"
     properties:
+      id:
+        type: "number"
+        example: 1
+      email:
+        type: "string"
+        example: "johndoe@gmail.com"
       firstName:
         type: "string"
         example: "John"
       lastName:
         type: "string"
         example: "Doe"
-      email:
-        type: "string"
-        example: "johndoe@gmail.com"
       password:
         type: "string"
         example: "password"
+      role:
+        type: enum
+        enum:
+          - "user"
+          - "admin"
+        example: "user"
+      money:
+        type: "number"
+        example: 100
+      createdAt:
+        type: "string"
+        example: "2020-08-01T12:00:00Z"
+      updatedAt:
+        type: "string"
+        example: "2020-08-01T12:00:00Z"
+
+  Transaction:
+    type: "object"
+    properties:
+      id:
+        type: "number"
+        example: 1
+      amount:
+        type: "number"
+        example: 100
+      type:
+        type: enum
+        enum:
+          - "deposit"
+          - "withdraw"
+          - "buy"
+        example: "deposit"
+      createdAt:
+        type: "string"
+        example: "2020-08-01T12:00:00Z"

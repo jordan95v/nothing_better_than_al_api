@@ -89,9 +89,6 @@ usersRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
     const user: User | null = await prisma.user.findUnique({
       where: { id: req.user.id },
     })
-    if (user === null) {
-      return res.status(404).send({ message: "User not found" })
-    }
     res.status(200).send({ user: user })
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" })
@@ -195,13 +192,7 @@ usersRouter.post(
       })
     }
     try {
-      const user: User | null = await prisma.user.findUnique({
-        where: { id: req.user.id },
-      })
-      if (user === null) {
-        return res.status(404).send({ message: "User not found" })
-      }
-      if (user.money < validation.value.amount) {
+      if (req.user.money < validation.value.amount) {
         return res.status(400).send({ message: "Insufficient funds" })
       }
       const updatedUser: User = await prisma.user.update({
