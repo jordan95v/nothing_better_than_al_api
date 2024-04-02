@@ -7,7 +7,7 @@ import {
   sessionIdGetValidator,
 } from "../validators/sessions-validator"
 import Joi from "joi"
-import { SessionWithAll } from "../models"
+import { SessionWithAll, SessionWithoutTickets } from "../models"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { Transaction, TransactionType } from "@prisma/client"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
@@ -18,14 +18,14 @@ sessionsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   const validator: Joi.ValidationResult<SessionGetRequest> =
     sessionGetValidator.validate(req.query)
   try {
-    const sessions: SessionWithAll[] = await prisma.session.findMany({
+    const sessions: SessionWithoutTickets[] = await prisma.session.findMany({
       where: {
         startAt: {
           gte: validator.value.startAt,
           lte: validator.value.endAt,
         },
       },
-      include: { film: true, room: true, tickets: true },
+      include: { film: true, room: true },
     })
     res.status(200).send(sessions)
   } catch (error) {

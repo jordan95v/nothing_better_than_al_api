@@ -18,6 +18,183 @@ components:
       bearerFormat: JWT
       description: "The JWT token to authorize the user"
 
+  schemas:
+    User:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        email:
+          type: "string"
+          example: "johndoe@mail.com"
+        firstName:
+          type: "string"
+          example: "John"
+        lastName:
+          type: "string"
+          example: "Doe"
+        role:
+          type: enum
+          enum:
+            - "USER"
+            - "ADMIN"
+          example: "USER"
+        money:
+          type: "number"
+          example: 100
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Transaction:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        amount:
+          type: "number"
+          example: 100
+        type:
+          type: enum
+          enum:
+            - "DEPOSIT"
+            - "WITHDRAW"
+            - "BUY"
+          example: "DEPOSIT"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Film:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        type:
+          type: enum
+          enum:
+            - "ACTION"
+            - "ADVENTURE"
+            - "COMEDY"
+            - "DRAMA"
+            - "FANTASY"
+            - "HORROR"
+            - "MYSTERY"
+            - "ROMANCE"
+            - "THRILLER"
+          example: "ACTION"
+        title:
+          type: "string"
+          example: "The Dark Knight"
+        description:
+          type: "string"
+          example: "Batman fights the Joker"
+        duration:
+          type: "number"
+          example: 120
+        image:
+          type: "string"
+          example: "https://image.com"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Room:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        name:
+          type: "string"
+          example: "Room 1"
+        number:
+          type: "number"
+          example: 1
+        description:
+          type: "string"
+          example: "Room 1 is a standard room"
+        images:
+          type: "array"
+          items:
+            type: "string"
+          example: ["https://image.com"]
+        type:
+          type: "string"
+          example: "STANDARD"
+        capacity:
+          type: "number"
+          example: 100
+        handicap:
+          type: "boolean"
+          example: false
+        maintenance:
+          type: "boolean"
+          example: false
+        basePrice:
+          type: "number"
+          example: 10
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Session:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        startAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        film:
+          $ref: "#/components/schemas/Film"
+        room:
+          $ref: "#/components/schemas/Room"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+          
+    Ticket:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
   responses:
     BearerNotProvidedResponse:
       description: "Bearer token not provided"
@@ -124,7 +301,7 @@ paths:
                     type: "string"
                     example: "User created"
                   user:
-                    $ref: "#/definitions/User"
+                    $ref: "#/components/schemas/User"
         400:
           $ref: "#/components/responses/InvalidInputResponse"
         500:
@@ -220,7 +397,7 @@ paths:
                 type: "object"
                 properties:
                   user:
-                    $ref: "#/definitions/User"
+                    $ref: "#/components/schemas/User"
         401:
           $ref: "#/components/responses/BearerNotProvidedResponse"
         500:
@@ -265,7 +442,7 @@ paths:
                     type: "string"
                     example: "User updated"
                   user:
-                    $ref: "#/definitions/User"
+                    $ref: "#/components/schemas/User"
         400:
           $ref: "#/components/responses/InvalidInputResponse"
         401:
@@ -292,7 +469,7 @@ paths:
                     type: "string"
                     example: "User deleted"
                   user:
-                    $ref: "#/definitions/User"
+                    $ref: "#/components/schemas/User"
         401:
           $ref: "#/components/responses/BearerNotProvidedResponse"
         500:
@@ -329,9 +506,9 @@ paths:
                     type: "string"
                     example: "Money deposited"
                   user:
-                    $ref: "#/definitions/User"
+                    $ref: "#/components/schemas/User"
                   transaction:
-                    $ref: "#/definitions/Transaction"
+                    $ref: "#/components/schemas/Transaction"
         400:
           $ref: "#/components/responses/InvalidInputResponse"
         401:
@@ -370,9 +547,9 @@ paths:
                     type: "string"
                     example: "Money withdrawn"
                   user:
-                    $ref: "#/definitions/User"
+                    $ref: "#/components/schemas/User"
                   transaction:
-                    $ref: "#/definitions/Transaction"
+                    $ref: "#/components/schemas/Transaction"
         400:
           $ref: "#/components/responses/InvalidInputResponse"
         401:
@@ -402,63 +579,108 @@ paths:
                   transactions:
                     type: "array"
                     items:
-                      $ref: "#/definitions/Transaction"
+                      $ref: "#/components/schemas/Transaction"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+  
+  /sessions:
+    get:
+      tags:
+        - "Sessions"
+      security:
+        - bearer: []
+      summary: "Get sessions"
+      description: "Get all sessions"
+      parameters:
+        - in: "query"
+          name: "startAt"
+          schema:
+            type: "string"
+            format: "date-time"
+            example: "2020-08-01T12:00:00Z"
+          description: "Start date to get sessions"
+          required: false
+        - in: "query"
+          name: "endAt"
+          schema:
+            type: "string"
+            format: "date-time"
+            example: "2020-08-01T12:00:00Z"
+          description: "End date to get sessions"
+          required: false
+      responses:
+        200:
+          description: "Sessions"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Session"
         401:
           $ref: "#/components/responses/BearerNotProvidedResponse"
         500:
           $ref: "#/components/responses/ServerErrorResponse"
 
-definitions:
-  User:
-    type: "object"
-    properties:
-      id:
-        type: "number"
-        example: 1
-      email:
-        type: "string"
-        example: "johndoe@gmail.com"
-      firstName:
-        type: "string"
-        example: "John"
-      lastName:
-        type: "string"
-        example: "Doe"
-      password:
-        type: "string"
-        example: "password"
-      role:
-        type: enum
-        enum:
-          - "user"
-          - "admin"
-        example: "user"
-      money:
-        type: "number"
-        example: 100
-      createdAt:
-        type: "string"
-        example: "2020-08-01T12:00:00Z"
-      updatedAt:
-        type: "string"
-        example: "2020-08-01T12:00:00Z"
-
-  Transaction:
-    type: "object"
-    properties:
-      id:
-        type: "number"
-        example: 1
-      amount:
-        type: "number"
-        example: 100
-      type:
-        type: enum
-        enum:
-          - "deposit"
-          - "withdraw"
-          - "buy"
-        example: "deposit"
-      createdAt:
-        type: "string"
-        example: "2020-08-01T12:00:00Z"
+  /sessions/{id}/buy:
+    post:
+      tags:
+        - "Sessions"
+      security:
+        - bearer: []
+      summary: "Buy ticket"
+      description: "Buy a ticket for a session"
+      parameters:
+        - in: "path"
+          name: "id"
+          schema:
+            type: "number"
+            example: 1
+          required: true
+          description: "ID of the session to buy a ticket for"
+      responses:
+        201:
+          description: "Ticket bought"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Ticket bought"
+                  oldMoney:
+                    type: "number"
+                    example: 100
+                  newMoney:
+                    type: "number"
+                    example: 90
+                  transaction:
+                    allOf:
+                      - $ref: "#/components/schemas/Transaction"
+                      - type: "object"
+                        properties:
+                          ticket:
+                            $ref: "#/components/schemas/Ticket"
+        400:
+          description: "Room is full"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: "object"
+                    properties:
+                      message:
+                        type: "string"
+                        example: "Room is full"
+                  - type: "object"
+                    properties:
+                      message:
+                        type: "string"
+                        example: "Not enough money"
+                  - $ref: "#/components/responses/InvalidInputResponse"
+                  
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"

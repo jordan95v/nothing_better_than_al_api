@@ -18,6 +18,11 @@ export interface SessionWithAll extends Session {
   tickets: Ticket[]
 }
 
+export interface SessionWithoutTickets extends Session {
+  room: Room
+  film: Film
+}
+
 export interface UserAll extends User {
   tokens: Token[]
   tickets: Ticket[]
