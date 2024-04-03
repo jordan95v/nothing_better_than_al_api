@@ -8,6 +8,17 @@ import {
   User,
 } from "@prisma/client"
 
+declare global {
+  namespace Express {
+    interface Request {
+      user: User
+    }
+    interface Response {
+      user: User
+    }
+  }
+}
+
 export interface TokenWithUser extends Token {
   user: User
 }

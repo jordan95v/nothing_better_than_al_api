@@ -5,8 +5,8 @@ services:
     image: postgres:latest
     container_name: postgres-db
     env_file: .env
-    expose:
-      - 5432
+    ports:
+      - 5432:5432
     restart: always
     volumes:
       - postgres-data:/var/lib/postgresql/data

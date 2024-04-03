@@ -175,7 +175,7 @@ components:
           type: "string"
           format: "date-time"
           example: "2020-08-01T12:00:00Z"
-          
+
     Ticket:
       type: "object"
       properties:
@@ -192,7 +192,7 @@ components:
           example: "2020-08-01T12:00:00Z"
 
   responses:
-    BearerNotProvidedResponse:
+    BearerNotProvided:
       description: "Bearer token not provided"
       content:
         application/json:
@@ -203,7 +203,7 @@ components:
                 type: "string"
                 example: "Bearer token not provided"
 
-    UnauthorizedResponse:
+    Unauthorized:
       description: "Unauthorized"
       content:
         application/json:
@@ -214,7 +214,7 @@ components:
                 type: "string"
                 example: "Unauthorized"
 
-    InvalidInputResponse:
+    InvalidInput:
       description: "Invalid input"
       content:
         application/json:
@@ -230,7 +230,7 @@ components:
                     "...": "...",
                   }
 
-    ServerErrorResponse:
+    ServerError:
       description: "Server error"
       content:
         application/json:
@@ -267,25 +267,25 @@ paths:
       summary: "Sign up"
       description: "Create a new user"
       requestBody:
-          description: "User object that needs to be added"
-          required: true
-          content:
-            application/json:
-              schema:
-                type: "object"
-                properties:
-                  email:
-                    type: "string"
-                    example: "johndoe@gmail.com"
-                  firstName:
-                    type: "string"
-                    example: "John"
-                  lastName:
-                    type: "string"
-                    example: "Doe"
-                  password:
-                    type: "string"
-                    example: "password"
+        description: "User object that needs to be added"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                email:
+                  type: "string"
+                  example: "johndoe@gmail.com"
+                firstName:
+                  type: "string"
+                  example: "John"
+                lastName:
+                  type: "string"
+                  example: "Doe"
+                password:
+                  type: "string"
+                  example: "password"
       responses:
         201:
           description: "User created"
@@ -300,9 +300,9 @@ paths:
                   user:
                     $ref: "#/components/schemas/User"
         400:
-          $ref: "#/components/responses/InvalidInputResponse"
+          $ref: "#/components/responses/InvalidInput"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /users/login:
     post:
@@ -339,7 +339,7 @@ paths:
                     type: "string"
                     example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjIwZjQwZjQwZjQwZjQwZjQwZjQwZjQiLCJpYXQiOjE1OTYwNjQwNzJ9.1"
         400:
-          $ref: "#/components/responses/InvalidInputResponse"
+          $ref: "#/components/responses/InvalidInput"
         401:
           description: "Error while logging in"
           content:
@@ -351,7 +351,7 @@ paths:
                     type: "string"
                     example: "Invalid email or password"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /users/logout:
     get:
@@ -371,11 +371,11 @@ paths:
                 type: "string"
                 example: "Logged out"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         403:
-          $ref: "#/components/responses/UnauthorizedResponse"
+          $ref: "#/components/responses/Unauthorized"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /users:
     get:
@@ -396,9 +396,9 @@ paths:
                   user:
                     $ref: "#/components/schemas/User"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
     patch:
       tags:
@@ -441,12 +441,12 @@ paths:
                   user:
                     $ref: "#/components/schemas/User"
         400:
-          $ref: "#/components/responses/InvalidInputResponse"
+          $ref: "#/components/responses/InvalidInput"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
-    
+          $ref: "#/components/responses/ServerError"
+
     delete:
       tags:
         - "Users"
@@ -468,9 +468,9 @@ paths:
                   user:
                     $ref: "#/components/schemas/User"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /users/deposit:
     post:
@@ -507,11 +507,11 @@ paths:
                   transaction:
                     $ref: "#/components/schemas/Transaction"
         400:
-          $ref: "#/components/responses/InvalidInputResponse"
+          $ref: "#/components/responses/InvalidInput"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /users/withdraw:
     post:
@@ -548,11 +548,11 @@ paths:
                   transaction:
                     $ref: "#/components/schemas/Transaction"
         400:
-          $ref: "#/components/responses/InvalidInputResponse"
+          $ref: "#/components/responses/InvalidInput"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /users/transactions:
     get:
@@ -578,10 +578,10 @@ paths:
                     items:
                       $ref: "#/components/schemas/Transaction"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
-  
+          $ref: "#/components/responses/ServerError"
+
   /sessions:
     get:
       tags:
@@ -624,9 +624,9 @@ paths:
                         room:
                           $ref: "#/components/schemas/Room"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /sessions/{id}/buy:
     post:
@@ -679,7 +679,7 @@ paths:
                     type: "string"
                     example: "Room is full or not enough money"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /films:
     get:
@@ -748,10 +748,10 @@ paths:
                 items:
                   $ref: "#/components/schemas/Film"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
-  
+          $ref: "#/components/responses/ServerError"
+
   /films/{id}:
     get:
       tags:
@@ -797,7 +797,7 @@ paths:
                         items:
                           $ref: "#/components/schemas/Session"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         404:
           description: "Film not found"
           content:
@@ -809,7 +809,7 @@ paths:
                     type: "string"
                     example: "Film not found"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /rooms:
     get:
@@ -829,10 +829,10 @@ paths:
                 items:
                   $ref: "#/components/schemas/Room"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
-  
+          $ref: "#/components/responses/ServerError"
+
   /rooms/{number}:
     get:
       tags:
@@ -857,9 +857,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/Room"
         400:
-          $ref: "#/components/responses/InvalidInputResponse"
+          $ref: "#/components/responses/InvalidInput"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         404:
           description: "Room not found"
           content:
@@ -871,8 +871,8 @@ paths:
                     type: "string"
                     example: "Room not found"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
-  
+          $ref: "#/components/responses/ServerError"
+
   /rooms/{number}/sessions:
     get:
       tags:
@@ -918,6 +918,6 @@ paths:
                         film:
                           $ref: "#/components/schemas/Film"
         401:
-          $ref: "#/components/responses/BearerNotProvidedResponse"
+          $ref: "#/components/responses/BearerNotProvided"
         500:
-          $ref: "#/components/responses/ServerErrorResponse"
+          $ref: "#/components/responses/ServerError"

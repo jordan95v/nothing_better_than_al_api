@@ -1,0 +1,462 @@
+openapi: "3.1.0"
+
+info:
+  version: "1.0.0"
+  title: "Nothing Better Than AL API - Admin section"
+  description: "This is the API for the Nothing Better Than AL cinema project. This section is for the admin part of the project."
+
+host: nodeapi.3630alloperenoel.fr
+basePath: "/"
+schemes:
+  - https
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "The JWT token to authorize the user"
+
+  schemas:
+    User:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        email:
+          type: "string"
+          example: "johndoe@mail.com"
+        firstName:
+          type: "string"
+          example: "John"
+        lastName:
+          type: "string"
+          example: "Doe"
+        password:
+          type: "string"
+          example: "password"
+        role:
+          type: enum
+          enum:
+            - "USER"
+            - "ADMIN"
+          example: "USER"
+        money:
+          type: "number"
+          example: 100
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Transaction:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        amount:
+          type: "number"
+          example: 100
+        type:
+          type: enum
+          enum:
+            - "DEPOSIT"
+            - "WITHDRAW"
+            - "BUY"
+          example: "DEPOSIT"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Film:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        type:
+          type: enum
+          enum:
+            - "ACTION"
+            - "ADVENTURE"
+            - "COMEDY"
+            - "DRAMA"
+            - "FANTASY"
+            - "HORROR"
+            - "MYSTERY"
+            - "ROMANCE"
+            - "THRILLER"
+          example: "ACTION"
+        title:
+          type: "string"
+          example: "The Dark Knight"
+        description:
+          type: "string"
+          example: "Batman fights the Joker"
+        duration:
+          type: "number"
+          example: 120
+        image:
+          type: "string"
+          example: "https://image.com"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Room:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        name:
+          type: "string"
+          example: "Room 1"
+        number:
+          type: "number"
+          example: 1
+        description:
+          type: "string"
+          example: "Room 1 is a standard room"
+        images:
+          type: "array"
+          items:
+            type: "string"
+          example: ["https://image.com"]
+        type:
+          type: "string"
+          example: "STANDARD"
+        capacity:
+          type: "number"
+          example: 100
+        handicap:
+          type: "boolean"
+          example: false
+        maintenance:
+          type: "boolean"
+          example: false
+        basePrice:
+          type: "number"
+          example: 10
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Session:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        startAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+    Ticket:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          example: 1
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+
+  responses:
+    BearerNotProvided:
+      description: "Bearer token not provided"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Bearer token not provided"
+
+    Unauthorized:
+      description: "Unauthorized"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Unauthorized"
+
+    InvalidInput:
+      description: "Invalid input"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              errors:
+                type: "object"
+                example:
+                  {
+                    "field1": "field_1 is required",
+                    "field2": "field2 need to be at least 3 characters long",
+                    "...": "...",
+                  }
+
+    ServerError:
+      description: "Server error"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Something went wrong"
+
+paths:
+  /users:
+    get:
+      tags:
+        - "Users"
+      summary: "Get all users"
+      description: "Get all users"
+      security:
+        - bearer: []
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/User"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  /users/{id}:
+    get:
+      tags:
+        - "Users"
+      summary: "Get a user by id"
+      description: "Get a user by id"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "User id"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+    patch:
+      tags:
+        - "Users"
+      summary: "Update a user by id"
+      description: "Update a user by id"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "User id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                email:
+                  type: "string"
+                  example: "johndoe@gmail.com"
+                firstName:
+                  type: "string"
+                  example: "John"
+                lastName:
+                  type: "string"
+                  example: "Doe"
+                role:
+                  type: enum
+                  enum:
+                    - "USER"
+                    - "ADMIN"
+                  example: "USER"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User updated"
+                  user:
+                    $ref: "#/components/schemas/User"
+        400:
+          $ref: "#/components/responses/InvalidInput"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags:
+        - "Users"
+      summary: "Delete a user by id"
+      description: "Delete a user by id"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "User id"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User deleted"
+                  user:
+                    $ref: "#/components/schemas/User"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  /users/{id}/transactions:
+    get:
+      tags:
+        - "Users"
+      summary: "Get all transactions of a user"
+      description: "Get all transactions of a user"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "User id"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User not found"
+        500:
+          $ref: "#/components/responses/ServerError"
