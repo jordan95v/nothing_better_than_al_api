@@ -66,12 +66,7 @@ sessionsRouter.post(
           amount: session.room.basePrice,
           userId: req.user.id,
           type: TransactionType.BUY,
-          ticket: {
-            create: {
-              sessionId: validation.value.id,
-              userId: req.user.id,
-            },
-          },
+          ticket: { create: { sessionId: validation.value.id, userId: req.user.id } }
         },
         include: { ticket: true },
       })

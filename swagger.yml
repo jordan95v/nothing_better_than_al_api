@@ -167,10 +167,6 @@ components:
           type: "string"
           format: "date-time"
           example: "2020-08-01T12:00:00Z"
-        film:
-          $ref: "#/components/schemas/Film"
-        room:
-          $ref: "#/components/schemas/Room"
         createdAt:
           type: "string"
           format: "date-time"
@@ -618,7 +614,14 @@ paths:
               schema:
                 type: "array"
                 items:
-                  $ref: "#/components/schemas/Session"
+                  allOf:
+                    - $ref: "#/components/schemas/Session"
+                    - type: "object"
+                      properties:
+                        film:
+                          $ref: "#/components/schemas/Film"
+                        room:
+                          $ref: "#/components/schemas/Room"
         401:
           $ref: "#/components/responses/BearerNotProvidedResponse"
         500:
@@ -681,6 +684,137 @@ paths:
                         type: "string"
                         example: "Not enough money"
                   - $ref: "#/components/responses/InvalidInputResponse"
-                  
         500:
           $ref: "#/components/responses/ServerErrorResponse"
+
+
+  /films:
+    get:
+      tags:
+        - "Films"
+      security:
+        - bearer: []
+      summary: "Get films"
+      description: "Get all films"
+      parameters:
+        - in: "query"
+          name: "title"
+          schema:
+            type: "string"
+          description: "Title of the film"
+          required: false
+        - in: "query"
+          name: "type"
+          schema:
+            type: "string"
+            enum:
+              - "ACTION"
+              - "ADVENTURE"
+              - "COMEDY"
+              - "DRAMA"
+              - "FANTASY"
+              - "HORROR"
+              - "MYSTERY"
+              - "ROMANCE"
+              - "THRILLER"
+          description: "Type of the film"
+          required: false
+        - in: "query"
+          name: "minDuration"
+          schema:
+            type: "number"
+          description: "Minimum duration of the film"
+          required: false
+        - in: "query"
+          name: "maxDuration"
+          schema:
+            type: "number"
+          description: "Maximum duration of the film"
+          required: false
+        - in: "query"
+          name: "startDate"
+          schema:
+            type: "string"
+            format: "date-time"
+          description: "Start date of the sessions"
+          required: false
+        - in: "query"
+          name: "endDate"
+          schema:
+            type: "string"
+            format: "date-time"
+          description: "End date of the sessions"
+          required: false
+      responses:
+        200:
+          description: "Films"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Film"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+  
+  /films/{id}:
+    get:
+      tags:
+        - "Films"
+      security:
+        - bearer: []
+      summary: "Get a film"
+      description: "Get a film by ID, including sessions based on the provided dates"
+      parameters:
+        - in: "path"
+          name: "id"
+          schema:
+            type: "number"
+            example: 1
+          required: true
+          description: "ID of the film to get"
+        - in: "query"
+          name: "startDate"
+          schema:
+            type: "string"
+            format: "date-time"
+          description: "Start date of the sessions"
+          required: false
+        - in: "query"
+          name: "endDate"
+          schema:
+            type: "string"
+            format: "date-time"
+          description: "End date of the sessions"
+          required: false
+      responses:
+        200:
+          description: "Film"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Film"
+                  - type: "object"
+                    properties:
+                      sessions:
+                        type: "array"
+                        items:
+                          $ref: "#/components/schemas/Session"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        404:
+          description: "Film not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Film not found"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+
