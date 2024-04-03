@@ -1,4 +1,4 @@
-openapi: "3.0.0"
+openapi: "3.1.0"
 
 info:
   version: "1.0.0"
@@ -240,6 +240,7 @@ components:
               message:
                 type: "string"
                 example: "Something went wrong"
+
 paths:
   /healthcheck:
     get:
@@ -668,25 +669,17 @@ paths:
                           ticket:
                             $ref: "#/components/schemas/Ticket"
         400:
-          description: "Room is full"
+          description: "Room is full or not enough money"
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: "object"
-                    properties:
-                      message:
-                        type: "string"
-                        example: "Room is full"
-                  - type: "object"
-                    properties:
-                      message:
-                        type: "string"
-                        example: "Not enough money"
-                  - $ref: "#/components/responses/InvalidInputResponse"
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Room is full or not enough money"
         500:
           $ref: "#/components/responses/ServerErrorResponse"
-
 
   /films:
     get:
@@ -818,3 +811,113 @@ paths:
         500:
           $ref: "#/components/responses/ServerErrorResponse"
 
+  /rooms:
+    get:
+      tags:
+        - "Rooms"
+      security:
+        - bearer: []
+      summary: "Get rooms"
+      description: "Get all rooms without maintenance"
+      responses:
+        200:
+          description: "Rooms"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Room"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+  
+  /rooms/{number}:
+    get:
+      tags:
+        - "Rooms"
+      security:
+        - bearer: []
+      summary: "Get a room"
+      description: "Get a room by number, if not in maintenance"
+      parameters:
+        - in: "path"
+          name: "number"
+          schema:
+            type: "number"
+            example: 1
+          required: true
+          description: "Number of the room to get"
+      responses:
+        200:
+          description: "Room"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        400:
+          $ref: "#/components/responses/InvalidInputResponse"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        404:
+          description: "Room not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Room not found"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
+  
+  /rooms/{number}/sessions:
+    get:
+      tags:
+        - "Rooms"
+      security:
+        - bearer: []
+      summary: "Get room sessions"
+      description: "Get all sessions for a room based on the provided dates"
+      parameters:
+        - in: "path"
+          name: "number"
+          schema:
+            type: "number"
+            example: 1
+          required: true
+          description: "Number of the room to get sessions for"
+        - in: "query"
+          name: "startDate"
+          schema:
+            type: "string"
+            format: "date-time"
+          description: "Start date of the sessions"
+          required: false
+        - in: "query"
+          name: "endDate"
+          schema:
+            type: "string"
+            format: "date-time"
+          description: "End date of the sessions"
+          required: false
+      responses:
+        200:
+          description: "Sessions"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/Session"
+                    - type: "object"
+                      properties:
+                        film:
+                          $ref: "#/components/schemas/Film"
+        401:
+          $ref: "#/components/responses/BearerNotProvidedResponse"
+        500:
+          $ref: "#/components/responses/ServerErrorResponse"
