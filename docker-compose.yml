@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     networks:
       - caddy
+      - monitoring
       - nothing_better_than_al_api_network
 
   postgres-db:
@@ -28,5 +29,7 @@ volumes:
 
 networks:
   caddy:
+    external: true
+  monitoring:
     external: true
   nothing_better_than_al_api_network:
