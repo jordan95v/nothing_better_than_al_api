@@ -99,10 +99,10 @@ filmsAdminRouter.delete(
       })
     }
     try {
-      await prisma.film.delete({
+      const film: Film | null = await prisma.film.delete({
         where: { id: validation.value.id },
       })
-      return res.status(200).send({ message: "Film deleted" })
+      return res.status(200).send({ message: "Film deleted", film })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)

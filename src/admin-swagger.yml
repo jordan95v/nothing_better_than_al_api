@@ -194,6 +194,83 @@ components:
           format: "date-time"
           example: "2020-08-01T12:00:00Z"
 
+  definitions:
+    SessionRequest:
+      type: "object"
+      properties:
+        startAt:
+          type: "string"
+          format: "date-time"
+          example: "2020-08-01T12:00:00Z"
+        filmId:
+          type: "number"
+          example: 1
+        roomId:
+          type: "number"
+          example: 1
+
+    RoomRequest:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          example: "Room 1"
+        number:
+          type: "number"
+          example: 1
+        description:
+          type: "string"
+          example: "Room 1 is a standard room"
+        images:
+          type: "array"
+          items:
+            type: "string"
+          example: ["https://image.com"]
+        type:
+          type: enum
+          enum:
+            - "STANDARD"
+            - "IMAX"
+          example: "STANDARD"
+        capacity:
+          type: "number"
+          example: 100
+        handicap:
+          type: "boolean"
+          example: false
+        maintenance:
+          type: "boolean"
+          example: false
+
+    FilmRequest:
+      type: "object"
+      properties:
+        type:
+          type: enum
+          enum:
+            - "ACTION"
+            - "ADVENTURE"
+            - "COMEDY"
+            - "DRAMA"
+            - "FANTASY"
+            - "HORROR"
+            - "MYSTERY"
+            - "ROMANCE"
+            - "THRILLER"
+          example: "ACTION"
+        title:
+          type: "string"
+          example: "The Dark Knight"
+        description:
+          type: "string"
+          example: "Batman fights the Joker"
+        duration:
+          type: "number"
+          example: 120
+        image:
+          type: "string"
+          example: "https://image.com"
+
   responses:
     BearerNotProvided:
       description: "Bearer token not provided"
@@ -312,7 +389,7 @@ paths:
       tags:
         - "Users"
       summary: "Update a user by id"
-      description: "Update a user by id"
+      description: "Update a user by id, not all fields are required"
       security:
         - bearer: []
       parameters:
@@ -458,5 +535,395 @@ paths:
                   message:
                     type: "string"
                     example: "User not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  /sessions:
+    post:
+      tags:
+        - "Sessions"
+      summary: "Create a session"
+      description: "Create a session"
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/definitions/SessionRequest"
+      responses:
+        201:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Session created"
+                  session:
+                    $ref: "#/components/schemas/Session"
+        400:
+          $ref: "#/components/responses/InvalidInput"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  /sessions/{id}:
+    patch:
+      tags:
+        - "Sessions"
+      summary: "Update a session by id"
+      description: "Update a session by id, not all fields are required"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "Session id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/definitions/SessionRequest"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        400:
+          $ref: "#/components/responses/InvalidInput"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "Session not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Session not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags:
+        - "Sessions"
+      summary: "Delete a session by id"
+      description: "Delete a session by id"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "Session id"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Session deleted"
+                  session:
+                    $ref: "#/components/schemas/Session"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "Session not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Session not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  /rooms:
+    post:
+      tags:
+        - "Rooms"
+      summary: "Create a room"
+      description: "Create a room"
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/definitions/RoomRequest"
+      responses:
+        201:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Room created"
+                  room:
+                    $ref: "#/components/schemas/Room"
+        400:
+          $ref: "#/components/responses/InvalidInput"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  /rooms/{id}:
+    patch:
+      tags:
+        - "Rooms"
+      summary: "Update a room by id"
+      description: "Update a room by id, not all fields are required"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "Room id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/definitions/RoomRequest"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Room updated"
+                  room:
+                    $ref: "#/components/schemas/Room"
+        400:
+          $ref: "#/components/responses/InvalidInput"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "Room not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Room not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags:
+        - "Rooms"
+      summary: "Delete a room by id"
+      description: "Delete a room by id"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "Room id"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Room deleted"
+                  room:
+                    $ref: "#/components/schemas/Room"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "Room not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Room not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+          
+  /films:
+    post:
+      tags:
+        - "Films"
+      summary: "Create a film"
+      description: "Create a film"
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/definitions/FilmRequest"
+      responses:
+        201:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Film created"
+                  film:
+                    $ref: "#/components/schemas/Film"
+        400:
+          $ref: "#/components/responses/InvalidInput"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        500:
+          $ref: "#/components/responses/ServerError"
+  
+  /films/{id}:
+    patch:
+      tags:
+        - "Films"
+      summary: "Update a film by id"
+      description: "Update a film by id, not all fields are required"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "Film id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/definitions/FilmRequest"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Film updated"
+                  film:
+                    $ref: "#/components/schemas/Film"
+        400:
+          $ref: "#/components/responses/InvalidInput"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "Film not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Film not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags:
+        - "Films"
+      summary: "Delete a film by id"
+      description: "Delete a film by id"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "Film id"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Film deleted"
+                  film:
+                    $ref: "#/components/schemas/Film"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "Film not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "Film not found"
         500:
           $ref: "#/components/responses/ServerError"

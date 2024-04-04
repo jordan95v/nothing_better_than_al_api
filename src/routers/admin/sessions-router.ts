@@ -120,7 +120,7 @@ sessionsAdminRouter.post(
       const session: Session = await prisma.session.create({
         data: validation.value,
       })
-      res.status(201).send(session)
+      res.status(201).send({ message: "Session created", session: session })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
@@ -164,7 +164,7 @@ sessionsAdminRouter.patch(
         where: { id: validation.value.id },
         data: updatedSession,
       })
-      res.status(200).send(newSession)
+      res.status(200).send({ message: "Session updated", session: newSession })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
@@ -174,7 +174,6 @@ sessionsAdminRouter.patch(
       if (error instanceof SessionError) {
         return res.status(400).send({ message: error.message })
       }
-      console.log(error)
       res.status(500).send({ message: "Something went wrong." })
     }
   }
@@ -193,10 +192,10 @@ sessionsAdminRouter.delete(
       })
     }
     try {
-      await prisma.session.delete({
+      const session: Session | null = await prisma.session.delete({
         where: { id: validation.value.id },
       })
-      res.status(200).send("Session deleted.")
+      res.status(200).send({ message: "Session deleted.", session })
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         const prismaError: HttpError = generatePrismaErrorMessage(error)
