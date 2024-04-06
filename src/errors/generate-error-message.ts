@@ -5,9 +5,9 @@ export interface HttpError {
   message: string
 }
 
-export const generatePrismaErrorMessage = (
+export const generatePrismaErrorMessage = async (
   error: PrismaClientKnownRequestError
-): HttpError => {
+): Promise<HttpError> => {
   const modelName = error.meta?.modelName
   const field = error.meta?.target
   let errorMessage = ""

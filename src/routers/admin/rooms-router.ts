@@ -15,12 +15,8 @@ import {
 import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
 import { prisma } from "../.."
 import Joi from "joi"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
-import {
-  HttpError,
-  generatePrismaErrorMessage,
-} from "../../errors/generate-error-message"
 import { Room } from "@prisma/client"
+import { handleError } from "../../errors/handle-error"
 
 export const roomsAdminRouter = Router()
 
@@ -43,12 +39,7 @@ roomsAdminRouter.post(
       })
       return res.status(200).send({ message: "Room created", data: room })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      return res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -81,12 +72,7 @@ roomsAdminRouter.patch(
       })
       res.status(200).send({ message: "Room updated", data: room })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -109,7 +95,7 @@ roomsAdminRouter.delete(
       })
       res.status(200).send({ message: "Room deleted" })
     } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )

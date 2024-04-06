@@ -330,6 +330,19 @@ paths:
       description: "Get all users"
       security:
         - bearer: []
+      parameters:
+        - in: "query"
+          name: "limit"
+          schema:
+            type: "number"
+          description: "Limit of sessions to get"
+          required: false
+        - in: "query"
+          name: "page"
+          schema:
+            type: "number"
+          description: "page of sessions to get"
+          required: false
       responses:
         200:
           description: "Success"
@@ -512,6 +525,18 @@ paths:
           schema:
             type: "number"
           description: "User id"
+        - in: "query"
+          name: "limit"
+          schema:
+            type: "number"
+          description: "Limit of sessions to get"
+          required: false
+        - in: "query"
+          name: "page"
+          schema:
+            type: "number"
+          description: "page of sessions to get"
+          required: false
       responses:
         200:
           description: "Success"

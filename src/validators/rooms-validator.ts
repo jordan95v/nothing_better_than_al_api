@@ -1,5 +1,15 @@
 import Joi from "joi"
 
+export interface RoomGetRequest {
+  limit?: number
+  page?: number
+}
+
+export const roomGetValidator = Joi.object<RoomGetRequest>({
+  limit: Joi.number().optional(),
+  page: Joi.number().optional(),
+}).options({ abortEarly: false })
+
 export interface RoomIdGetRequest {
   number: number
   startDate?: Date

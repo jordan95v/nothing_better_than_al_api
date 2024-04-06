@@ -39,3 +39,7 @@ export interface UserAll extends User {
   tickets: Ticket[]
   transactions: Transaction[]
 }
+
+export interface UserWithTransactions extends User {
+  transactions: Transaction[]
+}

@@ -1,12 +1,26 @@
 import { Role } from "@prisma/client"
 import Joi, { extend } from "joi"
 
+export interface UserAdminGetRequest {
+  limit?: number
+  page?: number
+}
+
+export const userAdminGetValidator = Joi.object<UserAdminGetRequest>({
+  limit: Joi.number().optional(),
+  page: Joi.number().optional(),
+})
+
 export interface UserIdAdminRequest {
   id: number
+  limit?: number
+  page?: number
 }
 
 export const userIdAdminValidator = Joi.object<UserIdAdminRequest>({
   id: Joi.number().required(),
+  limit: Joi.number().optional(),
+  page: Joi.number().optional(),
 })
 
 export interface UserAdminUpdateRequest extends UserIdAdminRequest {

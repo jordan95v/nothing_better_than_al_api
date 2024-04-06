@@ -8,6 +8,8 @@ import {
   UserUpdateRequest,
   userOperationValidator,
   UserOperationRequest,
+  UserTransactionRequest,
+  userTransactionValidator,
 } from "../validators/users-validator"
 import { compare, hash } from "bcrypt"
 import { sign } from "jsonwebtoken"
@@ -16,11 +18,7 @@ import Joi from "joi"
 import { Transaction, TransactionType, User } from "@prisma/client"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
-import {
-  HttpError,
-  generatePrismaErrorMessage,
-} from "../errors/generate-error-message"
+import { handleError } from "../errors/handle-error"
 
 export const usersRouter = Router()
 
@@ -32,8 +30,8 @@ usersRouter.post("/signup", async (req: Request, res: Response) => {
       errors: generateValidationErrorMessage(validation.error.details),
     })
   }
-  const hashedPassword: string = await hash(req.body.password, 10)
   try {
+    const hashedPassword: string = await hash(req.body.password, 10)
     const user: User = await prisma.user.create({
       data: {
         firstName: validation.value.firstName,
@@ -42,10 +40,9 @@ usersRouter.post("/signup", async (req: Request, res: Response) => {
         password: hashedPassword,
       },
     })
-    res.status(201).send({ message: "User created", user: user })
+    res.status(201).send({ message: "User created", user })
   } catch (error) {
-    console.log(error)
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -80,7 +77,7 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
     })
     res.status(200).send({ message: "Logged in", token: token })
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -91,7 +88,7 @@ usersRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
     })
     res.status(200).send({ user: user })
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -105,7 +102,7 @@ usersRouter.get(
       })
       res.status(200).send({ message: "Logged out" })
     } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -128,7 +125,7 @@ usersRouter.patch("/", authMiddleware, async (req: Request, res: Response) => {
     })
     res.status(200).send({ message: "User updated", user: updatedUser })
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -139,7 +136,7 @@ usersRouter.delete("/", authMiddleware, async (req: Request, res: Response) => {
     })
     res.status(200).send({ message: "User deleted", user: deletedUser })
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -170,12 +167,7 @@ usersRouter.post(
         .status(200)
         .send({ message: "Deposit successful", user: updatedUser, transaction })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -212,7 +204,7 @@ usersRouter.post(
         transaction,
       })
     } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -221,17 +213,28 @@ usersRouter.get(
   "/transactions",
   authMiddleware,
   async (req: Request, res: Response) => {
+    const validation: Joi.ValidationResult<UserTransactionRequest> =
+      userTransactionValidator.validate(req.query)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
     try {
+      const limit: number = validation.value.limit ?? 10
+      const page: number = validation.value.page ?? 0
       const transactions: Transaction[] = await prisma.transaction.findMany({
         where: { userId: req.user.id },
         include: { ticket: true },
+        take: limit,
+        skip: page * limit,
       })
       res.status(200).send({
         numberOfTransactions: transactions.length,
         transactions: transactions,
       })
     } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )

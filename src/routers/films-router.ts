@@ -10,6 +10,7 @@ import {
 } from "../validators/films-validator"
 import Joi from "joi"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
+import { handleError } from "../errors/handle-error"
 
 export const filmsRouter = Router()
 
@@ -22,6 +23,8 @@ filmsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
     })
   }
   try {
+    const limit: number = validation.value.limit ?? 10
+    const page: number = validation.value.page ?? 0
     const films: Film[] | null = await prisma.film.findMany({
       where: {
         title: {
@@ -43,10 +46,12 @@ filmsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
         },
       },
       include: { sessions: true },
+      take: limit,
+      skip: page * limit,
     })
     res.status(200).send(films)
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -78,6 +83,6 @@ filmsRouter.get("/:id", authMiddleware, async (req: Request, res: Response) => {
     }
     res.status(200).send(film)
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })

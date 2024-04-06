@@ -3,27 +3,36 @@ import { authMiddleware } from "../middlewares/auth-middleware"
 import { prisma } from ".."
 import { Room, Session } from "@prisma/client"
 import {
+  RoomGetRequest,
   RoomIdGetRequest,
+  roomGetValidator,
   roomIdGetValidator,
 } from "../validators/rooms-validator"
 import Joi from "joi"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
-import {
-  HttpError,
-  generatePrismaErrorMessage,
-} from "../errors/generate-error-message"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
+import { handleError } from "../errors/handle-error"
 
 export const roomsRouter = Router()
 
 roomsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
+  const validation: Joi.ValidationResult<RoomGetRequest> =
+    roomGetValidator.validate(req.query)
+  if (validation.error) {
+    return res.status(400).send({
+      errors: generateValidationErrorMessage(validation.error.details),
+    })
+  }
   try {
+    const limit: number = validation.value.limit ?? 10
+    const page: number = validation.value.page ?? 0
     const rooms: Room[] | null = await prisma.room.findMany({
       where: { maintenance: false },
+      take: limit,
+      skip: page * limit,
     })
     res.status(200).send(rooms)
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -50,7 +59,7 @@ roomsRouter.get(
       }
       res.status(200).send(room)
     } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -76,11 +85,6 @@ roomsRouter.get("/:number/sessions", async (req: Request, res: Response) => {
     })
     res.status(200).send(sessions)
   } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError) {
-      const prismaError: HttpError = generatePrismaErrorMessage(error)
-      res.status(prismaError.status).send(prismaError)
-      return
-    }
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })

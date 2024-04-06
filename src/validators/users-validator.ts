@@ -45,3 +45,13 @@ export interface UserOperationRequest {
 export const userOperationValidator = Joi.object<UserOperationRequest>({
   amount: Joi.number().required().min(1),
 }).options({ abortEarly: false })
+
+export interface UserTransactionRequest {
+  limit?: number
+  page?: number
+}
+
+export const userTransactionValidator = Joi.object<UserTransactionRequest>({
+  limit: Joi.number().optional().min(1),
+  page: Joi.number().optional().min(0),
+}).options({ abortEarly: false })

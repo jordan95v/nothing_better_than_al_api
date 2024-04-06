@@ -1,6 +1,11 @@
 import { RoomType } from "@prisma/client"
 import Joi from "joi"
 
+export enum RoomCapacity {
+  MIN = 15,
+  MAX = 30,
+}
+
 export const roomBasePrice = {
   [RoomType.STANDARD]: 10,
   [RoomType.IMAX]: 16,
@@ -25,7 +30,7 @@ export const roomCreateValidator = Joi.object<RoomCreateRequest>({
   type: Joi.string()
     .valid(...Object.values(RoomType))
     .required(),
-  capacity: Joi.number().required().min(15).max(30),
+  capacity: Joi.number().required().min(RoomCapacity.MIN).max(RoomCapacity.MAX),
   handicap: Joi.boolean().required(),
   maintenance: Joi.boolean().required(),
 }).options({ abortEarly: false })
@@ -58,7 +63,7 @@ export const roomUpdateValidator = Joi.object<RoomUpdateRequest>({
   type: Joi.string()
     .valid(...Object.values(RoomType))
     .optional(),
-  capacity: Joi.number().optional().min(15).max(30),
+  capacity: Joi.number().optional().min(RoomCapacity.MIN).max(RoomCapacity.MAX),
   handicap: Joi.boolean().optional(),
   maintenance: Joi.boolean().optional(),
 }).options({ abortEarly: false })

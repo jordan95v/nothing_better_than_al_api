@@ -11,6 +11,7 @@ import { SessionWithAll, SessionWithoutTickets } from "../models"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { Transaction, TransactionType } from "@prisma/client"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
+import { handleError } from "../errors/handle-error"
 
 export const sessionsRouter = Router()
 
@@ -26,10 +27,12 @@ sessionsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
         },
       },
       include: { film: true, room: true },
+      take: validator.value.limit ?? 10,
+      skip: validator.value.page ?? 0,
     })
     res.status(200).send(sessions)
   } catch (error) {
-    res.status(500).send({ message: "Something went wrong" })
+    await handleError(error, res)
   }
 })
 
@@ -44,29 +47,31 @@ sessionsRouter.post(
         errors: generateValidationErrorMessage(validation.error.details),
       })
     }
-    const session: SessionWithAll | null = await prisma.session.findUnique({
-      where: { id: validation.value.id },
-      include: { film: true, room: true, tickets: true },
-    })
-    if (session === null) {
-      res.status(404).send({ message: "Session not found" })
-      return
-    }
-    if (session.room.basePrice > req.user.money) {
-      res.status(400).send({ message: "Not enough money" })
-      return
-    }
-    if (session.room.capacity <= session.tickets.length) {
-      res.status(400).send({ message: "Room is full" })
-      return
-    }
     try {
+      const session: SessionWithAll | null = await prisma.session.findUnique({
+        where: { id: validation.value.id },
+        include: { film: true, room: true, tickets: true },
+      })
+      if (session === null) {
+        res.status(404).send({ message: "Session not found" })
+        return
+      }
+      if (session.room.basePrice > req.user.money) {
+        res.status(400).send({ message: "Not enough money" })
+        return
+      }
+      if (session.room.capacity <= session.tickets.length) {
+        res.status(400).send({ message: "Room is full" })
+        return
+      }
       const transaction: Transaction = await prisma.transaction.create({
         data: {
           amount: session.room.basePrice,
           userId: req.user.id,
           type: TransactionType.BUY,
-          ticket: { create: { sessionId: validation.value.id, userId: req.user.id } }
+          ticket: {
+            create: { sessionId: validation.value.id, userId: req.user.id },
+          },
         },
         include: { ticket: true },
       })
@@ -81,7 +86,7 @@ sessionsRouter.post(
         transaction,
       })
     } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )

@@ -6,11 +6,6 @@ import {
 import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
 import { prisma } from "../.."
 import Joi from "joi"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
-import {
-  HttpError,
-  generatePrismaErrorMessage,
-} from "../../errors/generate-error-message"
 import { Film } from "@prisma/client"
 import {
   FilmCreateRequest,
@@ -20,6 +15,7 @@ import {
   FilmUpdateRequest,
   filmUpdateValidator,
 } from "../../validators/admin/films-validator"
+import { handleError } from "../../errors/handle-error"
 
 export const filmsAdminRouter = Router()
 
@@ -41,12 +37,7 @@ filmsAdminRouter.post(
       })
       return res.status(200).send({ message: "Film created", data: film })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      return res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -76,12 +67,7 @@ filmsAdminRouter.patch(
       })
       return res.status(200).send({ message: "Film updated", data: film })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      return res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -104,12 +90,7 @@ filmsAdminRouter.delete(
       })
       return res.status(200).send({ message: "Film deleted", film })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      return res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )

@@ -1,7 +1,9 @@
 import { Router, Request, Response } from "express"
-import { User } from "@prisma/client"
+import { Transaction, User } from "@prisma/client"
 import { prisma } from "../.."
 import {
+  UserAdminGetRequest,
+  userAdminGetValidator,
   UserAdminUpdateRequest,
   userAdminUpdateValidator,
   UserIdAdminRequest,
@@ -13,12 +15,8 @@ import {
 } from "../../middlewares/auth-middleware"
 import Joi from "joi"
 import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
-import {
-  HttpError,
-  generatePrismaErrorMessage,
-} from "../../errors/generate-error-message"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
-import { UserAll } from "../../models"
+import { UserAll, UserWithTransactions } from "../../models"
+import { handleError } from "../../errors/handle-error"
 
 export const usersAdminRouter = Router()
 
@@ -27,8 +25,24 @@ usersAdminRouter.get(
   authMiddleware,
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
-    const users: User[] = await prisma.user.findMany()
-    res.status(200).send(users)
+    const validation: Joi.ValidationResult<UserAdminGetRequest> =
+      userAdminGetValidator.validate(req.query)
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
+    try {
+      const limit: number = validation.value.limit ?? 10
+      const page: number = validation.value.page ?? 0
+      const users: User[] = await prisma.user.findMany({
+        take: limit,
+        skip: page * limit,
+      })
+      res.status(200).send(users)
+    } catch (error) {
+      await handleError(error, res)
+    }
   }
 )
 
@@ -44,13 +58,17 @@ usersAdminRouter.get(
         errors: generateValidationErrorMessage(validation.error.details),
       })
     }
-    const user: User | null = await prisma.user.findUnique({
-      where: { id: validation.value.id },
-    })
-    if (user === null) {
-      return res.status(404).send({ message: "User not found" })
+    try {
+      const user: User | null = await prisma.user.findUnique({
+        where: { id: validation.value.id },
+      })
+      if (user === null) {
+        return res.status(404).send({ message: "User not found" })
+      }
+      res.status(200).send(user)
+    } catch (error) {
+      await handleError(error, res)
     }
-    res.status(200).send(user)
   }
 )
 
@@ -60,20 +78,31 @@ usersAdminRouter.get(
   authMiddlewareAdmin,
   async (req: Request, res: Response) => {
     const validation: Joi.ValidationResult<UserIdAdminRequest> =
-      userIdAdminValidator.validate(req.params)
+      userIdAdminValidator.validate({ ...req.params, ...req.query })
     if (validation.error) {
       return res.status(400).send({
         errors: generateValidationErrorMessage(validation.error.details),
       })
     }
-    const user: UserAll | null = await prisma.user.findUnique({
-      where: { id: validation.value.id },
-      include: { transactions: true, tickets: true, tokens: true },
-    })
-    if (user === null) {
-      return res.status(404).send({ message: "User not found" })
+    try {
+      const limit: number = validation.value.limit ?? 10
+      const page: number = validation.value.page ?? 0
+      const user: UserWithTransactions | null = await prisma.user.findUnique({
+        where: { id: validation.value.id },
+        include: {
+          transactions: {
+            take: limit,
+            skip: page * limit,
+          },
+        },
+      })
+      if (user === null) {
+        return res.status(404).send({ message: "User not found" })
+      }
+      res.status(200).send(user.transactions)
+    } catch (error) {
+      await handleError(error, res)
     }
-    res.status(200).send(user.transactions)
   }
 )
 
@@ -109,12 +138,7 @@ usersAdminRouter.patch(
       })
       res.status(200).send({ message: "User updated", data: updatedUser })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )
@@ -131,21 +155,21 @@ usersAdminRouter.delete(
         errors: generateValidationErrorMessage(validation.error.details),
       })
     }
-    const user: User | null = await prisma.user.findUnique({
-      where: {
-        id: Number(req.params.id),
-      },
-    })
-    if (user === null) {
-      return res.status(404).send({ message: "User not found" })
-    }
     try {
+      const user: User | null = await prisma.user.findUnique({
+        where: {
+          id: Number(req.params.id),
+        },
+      })
+      if (user === null) {
+        return res.status(404).send({ message: "User not found" })
+      }
       const deletedUser: User = await prisma.user.delete({
         where: { id: user.id },
       })
       res.status(200).send({ message: "User deleted", user: deletedUser })
     } catch (error) {
-      res.status(500).send({ message: "Something went wrong" })
+      await handleError(error, res)
     }
   }
 )

@@ -6,11 +6,6 @@ import {
 import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
 import { prisma } from "../.."
 import Joi from "joi"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
-import {
-  HttpError,
-  generatePrismaErrorMessage,
-} from "../../errors/generate-error-message"
 import { Session, Film, Room } from "@prisma/client"
 import {
   MAINTENANCE_TIME,
@@ -24,10 +19,11 @@ import {
   sessionUpdateValidator,
 } from "../../validators/admin/sessions-validator"
 import { SessionWithAll } from "../../models"
+import { handleError } from "../../errors/handle-error"
 
 export const sessionsAdminRouter = Router()
 
-class SessionError extends Error {
+export class SessionError extends Error {
   constructor(message: string) {
     super(message)
     this.name = "SessionError"
@@ -122,15 +118,10 @@ sessionsAdminRouter.post(
       })
       res.status(201).send({ message: "Session created", session: session })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
       if (error instanceof SessionError) {
         return res.status(400).send({ message: error.message })
       }
-      res.status(500).send({ message: "Something went wrong." })
+      await handleError(error, res)
     }
   }
 )
@@ -166,15 +157,10 @@ sessionsAdminRouter.patch(
       })
       res.status(200).send({ message: "Session updated", session: newSession })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
       if (error instanceof SessionError) {
         return res.status(400).send({ message: error.message })
       }
-      res.status(500).send({ message: "Something went wrong." })
+      await handleError(error, res)
     }
   }
 )
@@ -197,12 +183,7 @@ sessionsAdminRouter.delete(
       })
       res.status(200).send({ message: "Session deleted.", session })
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        const prismaError: HttpError = generatePrismaErrorMessage(error)
-        res.status(prismaError.status).send({ message: prismaError.message })
-        return
-      }
-      res.status(500).send({ message: "Something went wrong." })
+      await handleError(error, res)
     }
   }
 )

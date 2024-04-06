@@ -607,6 +607,18 @@ paths:
             example: "2020-08-01T12:00:00Z"
           description: "End date to get sessions"
           required: false
+        - in: "query"
+          name: "limit"
+          schema:
+            type: "number"
+          description: "Limit of sessions to get"
+          required: false
+        - in: "query"
+          name: "page"
+          schema:
+            type: "number"
+          description: "page of sessions to get"
+          required: false
       responses:
         200:
           description: "Sessions"
@@ -738,6 +750,18 @@ paths:
             format: "date-time"
           description: "End date of the sessions"
           required: false
+        - in: "query"
+          name: "limit"
+          schema:
+            type: "number"
+          description: "Limit of sessions to get"
+          required: false
+        - in: "query"
+          name: "page"
+          schema:
+            type: "number"
+          description: "page of sessions to get"
+          required: false
       responses:
         200:
           description: "Films"
@@ -819,6 +843,19 @@ paths:
         - bearer: []
       summary: "Get rooms"
       description: "Get all rooms without maintenance"
+      parameters:
+        - in: "query"
+          name: "limit"
+          schema:
+            type: "number"
+          description: "Limit of sessions to get"
+          required: false
+        - in: "query"
+          name: "page"
+          schema:
+            type: "number"
+          description: "page of sessions to get"
+          required: false
       responses:
         200:
           description: "Rooms"

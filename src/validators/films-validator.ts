@@ -8,6 +8,8 @@ export interface FilmGetRequest {
   maxDuration?: number
   startDate?: string
   endDate?: string
+  limit?: number
+  page?: number
 }
 
 export const filmGetValidator = Joi.object<FilmGetRequest>({
@@ -19,6 +21,8 @@ export const filmGetValidator = Joi.object<FilmGetRequest>({
   maxDuration: Joi.number().optional(),
   startDate: Joi.string().isoDate().optional(),
   endDate: Joi.string().isoDate().optional(),
+  limit: Joi.number().optional(),
+  page: Joi.number().optional(),
 }).options({ abortEarly: false })
 
 export interface FilmIdGetRequest {
