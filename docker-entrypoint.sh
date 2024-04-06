@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cd /app
 npx prisma migrate deploy
