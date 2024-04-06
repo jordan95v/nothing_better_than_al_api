@@ -13,7 +13,7 @@ services:
       - nothing_better_than_al_api_network
 
   postgres-db:
-    image: postgres:latest
+    image: postgres:16.2-alpine3.19
     container_name: postgres-db
     env_file: .env
     restart: unless-stopped

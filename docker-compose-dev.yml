@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   postgres-db:
-    image: postgres:latest
+    image: postgres:16.2-alpine3.19
     container_name: postgres-db
     env_file: .env
     ports:
@@ -13,7 +13,7 @@ services:
     command: postgres -c 'timezone=Europe/Paris'
 
   adminer:
-    image: adminer
+    image: adminer:latest
     container_name: adminer
     ports:
       - 8080:8080
