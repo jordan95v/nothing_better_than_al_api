@@ -25,8 +25,13 @@ sessionsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
           gte: validator.value.startAt,
           lte: validator.value.endAt,
         },
+        room: { maintenance: false },
       },
-      include: { film: true, room: true },
+      include: {
+        film: true,
+        room: true,
+        _count: { select: { tickets: true } },
+      },
       take: validator.value.limit ?? 10,
       skip: validator.value.page ?? 0,
     })
