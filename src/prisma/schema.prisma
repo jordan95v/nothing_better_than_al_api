@@ -73,6 +73,7 @@ model Ticket {
   userId        Int
   transactionId Int         @unique
   transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: NoAction)
+  used          Boolean     @default(false)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 

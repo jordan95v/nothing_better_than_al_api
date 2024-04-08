@@ -6,10 +6,11 @@ export interface UserAdminGetRequest {
   page?: number
 }
 
-export const userAdminGetValidator = Joi.object<UserAdminGetRequest>({
-  limit: Joi.number().optional(),
-  page: Joi.number().optional(),
-})
+export const userAdminGetValidator: Joi.ObjectSchema<UserAdminGetRequest> =
+  Joi.object<UserAdminGetRequest>({
+    limit: Joi.number().optional(),
+    page: Joi.number().optional(),
+  })
 
 export interface UserIdAdminRequest {
   id: number
@@ -17,11 +18,12 @@ export interface UserIdAdminRequest {
   page?: number
 }
 
-export const userIdAdminValidator = Joi.object<UserIdAdminRequest>({
-  id: Joi.number().required(),
-  limit: Joi.number().optional(),
-  page: Joi.number().optional(),
-})
+export const userIdAdminValidator: Joi.ObjectSchema<UserIdAdminRequest> =
+  Joi.object<UserIdAdminRequest>({
+    id: Joi.number().required(),
+    limit: Joi.number().optional(),
+    page: Joi.number().optional(),
+  })
 
 export interface UserAdminUpdateRequest extends UserIdAdminRequest {
   email?: string
@@ -30,12 +32,13 @@ export interface UserAdminUpdateRequest extends UserIdAdminRequest {
   role?: Role
 }
 
-export const userAdminUpdateValidator = Joi.object<UserAdminUpdateRequest>({
-  id: Joi.number().required(),
-  email: Joi.string().email().optional(),
-  firstName: Joi.string().optional(),
-  lastName: Joi.string().optional(),
-  role: Joi.string()
-    .valid(...Object.values(Role))
-    .optional(),
-})
+export const userAdminUpdateValidator: Joi.ObjectSchema<UserAdminUpdateRequest> =
+  Joi.object<UserAdminUpdateRequest>({
+    id: Joi.number().required(),
+    email: Joi.string().email().optional(),
+    firstName: Joi.string().optional(),
+    lastName: Joi.string().optional(),
+    role: Joi.string()
+      .valid(...Object.values(Role))
+      .optional(),
+  })

@@ -90,6 +90,7 @@ const createTicket = async (
             userId: faker.helpers.arrayElement(users).id,
           },
         },
+        used: faker.datatype.boolean(),
         createdAt: faker.date.past(),
       },
     })

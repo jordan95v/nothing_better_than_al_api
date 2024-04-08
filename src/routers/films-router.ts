@@ -11,6 +11,7 @@ import {
 import Joi from "joi"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
 import { handleError } from "../errors/handle-error"
+import { DEFAULT_CONFIG } from "../config"
 
 export const filmsRouter = Router()
 
@@ -23,8 +24,8 @@ filmsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
     })
   }
   try {
-    const limit: number = validation.value.limit ?? 10
-    const page: number = validation.value.page ?? 0
+    const limit: number = validation.value.limit ?? DEFAULT_CONFIG.LIMIT
+    const page: number = validation.value.page ?? DEFAULT_CONFIG.PAGE
     const films: Film[] | null = await prisma.film.findMany({
       where: {
         title: {

@@ -563,6 +563,69 @@ paths:
         500:
           $ref: "#/components/responses/ServerError"
 
+  /users/{id}/tickets:
+    get:
+      tags:
+        - "Users"
+      summary: "Get all tickets of a user"
+      description: "Get all tickets of a user"
+      security:
+        - bearer: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "number"
+          description: "User id"
+        - in: "query"
+          name: "limit"
+          schema:
+            type: "number"
+          description: "Limit of sessions to get"
+          required: false
+        - in: "query"
+          name: "page"
+          schema:
+            type: "number"
+          description: "page of sessions to get"
+          required: false
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/Ticket"
+                    - type: "object"
+                      properties:
+                        session:
+                          allOf:
+                            - $ref: "#/components/schemas/Session"
+                            - type: "object"
+                              properties:
+                                film:
+                                  $ref: "#/components/schemas/Film"
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "User not found"
+        500:
+          $ref: "#/components/responses/ServerError"
+
   /sessions:
     post:
       tags:
@@ -820,7 +883,7 @@ paths:
                     example: "Room not found"
         500:
           $ref: "#/components/responses/ServerError"
-          
+
   /films:
     post:
       tags:
@@ -856,7 +919,7 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         500:
           $ref: "#/components/responses/ServerError"
-  
+
   /films/{id}:
     patch:
       tags:

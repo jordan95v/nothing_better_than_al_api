@@ -9,23 +9,25 @@ export interface FilmCreateRequest {
   image: string
 }
 
-export const filmCreateValidator = Joi.object<FilmCreateRequest>({
-  title: Joi.string().required(),
-  type: Joi.string()
-    .valid(...Object.values(FilmType))
-    .required(),
-  description: Joi.string().required(),
-  duration: Joi.number().required(),
-  image: Joi.string().required(),
-}).options({ abortEarly: false })
+export const filmCreateValidator: Joi.ObjectSchema<FilmCreateRequest> =
+  Joi.object<FilmCreateRequest>({
+    title: Joi.string().required(),
+    type: Joi.string()
+      .valid(...Object.values(FilmType))
+      .required(),
+    description: Joi.string().required(),
+    duration: Joi.number().required(),
+    image: Joi.string().required(),
+  }).options({ abortEarly: false })
 
 export interface FilmIdAdminRequest {
   id: number
 }
 
-export const filmIdAdminValidator = Joi.object<FilmIdAdminRequest>({
-  id: Joi.number().required(),
-}).options({ abortEarly: false })
+export const filmIdAdminValidator: Joi.ObjectSchema<FilmIdAdminRequest> =
+  Joi.object<FilmIdAdminRequest>({
+    id: Joi.number().required(),
+  }).options({ abortEarly: false })
 
 export interface FilmUpdateRequest extends FilmIdAdminRequest {
   title?: string
@@ -35,13 +37,14 @@ export interface FilmUpdateRequest extends FilmIdAdminRequest {
   image?: string
 }
 
-export const filmUpdateValidator = Joi.object<FilmUpdateRequest>({
-  id: Joi.number().required(),
-  title: Joi.string().optional(),
-  type: Joi.string()
-    .valid(...Object.values(FilmType))
-    .optional(),
-  description: Joi.string().optional(),
-  duration: Joi.number().optional(),
-  image: Joi.string().optional(),
-}).options({ abortEarly: false })
+export const filmUpdateValidator: Joi.ObjectSchema<FilmUpdateRequest> =
+  Joi.object<FilmUpdateRequest>({
+    id: Joi.number().required(),
+    title: Joi.string().optional(),
+    type: Joi.string()
+      .valid(...Object.values(FilmType))
+      .optional(),
+    description: Joi.string().optional(),
+    duration: Joi.number().optional(),
+    image: Joi.string().optional(),
+  }).options({ abortEarly: false })

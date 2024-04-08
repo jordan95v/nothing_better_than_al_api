@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express"
-import { Transaction, User } from "@prisma/client"
+import { User } from "@prisma/client"
 import { prisma } from "../.."
 import {
   UserAdminGetRequest,
@@ -15,8 +15,9 @@ import {
 } from "../../middlewares/auth-middleware"
 import Joi from "joi"
 import { generateValidationErrorMessage } from "../../errors/generate-validation-message"
-import { UserAll, UserWithTransactions } from "../../models"
+import { UserAll } from "../../models"
 import { handleError } from "../../errors/handle-error"
+import { DEFAULT_CONFIG } from "../../config"
 
 export const usersAdminRouter = Router()
 
@@ -33,8 +34,8 @@ usersAdminRouter.get(
       })
     }
     try {
-      const limit: number = validation.value.limit ?? 10
-      const page: number = validation.value.page ?? 0
+      const limit: number = validation.value.limit ?? DEFAULT_CONFIG.LIMIT
+      const page: number = validation.value.page ?? DEFAULT_CONFIG.PAGE
       const users: User[] = await prisma.user.findMany({
         take: limit,
         skip: page * limit,
@@ -73,6 +74,46 @@ usersAdminRouter.get(
 )
 
 usersAdminRouter.get(
+  "/:id/tickets",
+  authMiddleware,
+  authMiddlewareAdmin,
+  async (req: Request, res: Response) => {
+    const validation: Joi.ValidationResult<UserIdAdminRequest> =
+      userIdAdminValidator.validate({ ...req.params, ...req.query })
+    if (validation.error) {
+      return res.status(400).send({
+        errors: generateValidationErrorMessage(validation.error.details),
+      })
+    }
+    try {
+      const limit: number = validation.value.limit ?? DEFAULT_CONFIG.LIMIT
+      const page: number = validation.value.page ?? DEFAULT_CONFIG.PAGE
+      const user: UserAll | null = await prisma.user.findUnique({
+        where: { id: validation.value.id },
+        include: {
+          tickets: {
+            take: limit,
+            skip: page * limit,
+            include: {
+              session: {
+                include: { film: true },
+              },
+            },
+          },
+        },
+      })
+      if (user === null) {
+        return res.status(404).send({ message: "User not found" })
+      }
+      res.status(200).send(user.tickets)
+    } catch (error) {
+      console.log(error)
+      await handleError(error, res)
+    }
+  }
+)
+
+usersAdminRouter.get(
   "/:id/transactions",
   authMiddleware,
   authMiddlewareAdmin,
@@ -85,9 +126,9 @@ usersAdminRouter.get(
       })
     }
     try {
-      const limit: number = validation.value.limit ?? 10
-      const page: number = validation.value.page ?? 0
-      const user: UserWithTransactions | null = await prisma.user.findUnique({
+      const limit: number = validation.value.limit ?? DEFAULT_CONFIG.LIMIT
+      const page: number = validation.value.page ?? DEFAULT_CONFIG.PAGE
+      const user: UserAll | null = await prisma.user.findUnique({
         where: { id: validation.value.id },
         include: {
           transactions: {
@@ -118,7 +159,7 @@ usersAdminRouter.patch(
         errors: generateValidationErrorMessage(validation.error.details),
       })
     }
-    const user: User | null = await prisma.user.findUnique({
+    const user: UserAll | null = await prisma.user.findUnique({
       where: {
         id: validation.value.id,
       },

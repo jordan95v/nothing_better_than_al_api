@@ -12,18 +12,19 @@ export interface FilmGetRequest {
   page?: number
 }
 
-export const filmGetValidator = Joi.object<FilmGetRequest>({
-  title: Joi.string().optional(),
-  type: Joi.string()
-    .valid(...Object.values(FilmType))
-    .optional(),
-  minDuration: Joi.number().optional(),
-  maxDuration: Joi.number().optional(),
-  startDate: Joi.string().isoDate().optional(),
-  endDate: Joi.string().isoDate().optional(),
-  limit: Joi.number().optional(),
-  page: Joi.number().optional(),
-}).options({ abortEarly: false })
+export const filmGetValidator: Joi.ObjectSchema<FilmGetRequest> =
+  Joi.object<FilmGetRequest>({
+    title: Joi.string().optional(),
+    type: Joi.string()
+      .valid(...Object.values(FilmType))
+      .optional(),
+    minDuration: Joi.number().optional(),
+    maxDuration: Joi.number().optional(),
+    startDate: Joi.string().isoDate().optional(),
+    endDate: Joi.string().isoDate().optional(),
+    limit: Joi.number().optional(),
+    page: Joi.number().optional(),
+  }).options({ abortEarly: false })
 
 export interface FilmIdGetRequest {
   id: number
@@ -31,8 +32,9 @@ export interface FilmIdGetRequest {
   endDate?: string
 }
 
-export const filmIdGetValidator = Joi.object<FilmIdGetRequest>({
-  id: Joi.number().required(),
-  startDate: Joi.string().isoDate().optional(),
-  endDate: Joi.string().isoDate().optional(),
-}).options({ abortEarly: false })
+export const filmIdGetValidator: Joi.ObjectSchema<FilmIdGetRequest> =
+  Joi.object<FilmIdGetRequest>({
+    id: Joi.number().required(),
+    startDate: Joi.string().isoDate().optional(),
+    endDate: Joi.string().isoDate().optional(),
+  }).options({ abortEarly: false })

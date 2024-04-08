@@ -1,15 +1,6 @@
 import { RoomType } from "@prisma/client"
 import Joi from "joi"
-
-export enum RoomCapacity {
-  MIN = 15,
-  MAX = 30,
-}
-
-export const roomBasePrice = {
-  [RoomType.STANDARD]: 10,
-  [RoomType.IMAX]: 16,
-}
+import { RoomCapacity } from "../../config"
 
 export interface RoomCreateRequest {
   name: string
@@ -39,9 +30,10 @@ export interface RoomIdAdminRequest {
   id: number
 }
 
-export const roomIdAdminValidator = Joi.object<RoomIdAdminRequest>({
-  id: Joi.number().required(),
-}).options({ abortEarly: false })
+export const roomIdAdminValidator: Joi.ObjectSchema<RoomIdAdminRequest> =
+  Joi.object<RoomIdAdminRequest>({
+    id: Joi.number().required(),
+  }).options({ abortEarly: false })
 
 export interface RoomUpdateRequest extends RoomIdAdminRequest {
   name?: string
@@ -54,16 +46,20 @@ export interface RoomUpdateRequest extends RoomIdAdminRequest {
   maintenance?: boolean
 }
 
-export const roomUpdateValidator = Joi.object<RoomUpdateRequest>({
-  id: Joi.number().required(),
-  name: Joi.string().optional(),
-  number: Joi.number().optional(),
-  description: Joi.string().optional(),
-  images: Joi.array().items(Joi.string()).optional(),
-  type: Joi.string()
-    .valid(...Object.values(RoomType))
-    .optional(),
-  capacity: Joi.number().optional().min(RoomCapacity.MIN).max(RoomCapacity.MAX),
-  handicap: Joi.boolean().optional(),
-  maintenance: Joi.boolean().optional(),
-}).options({ abortEarly: false })
+export const roomUpdateValidator: Joi.ObjectSchema<RoomUpdateRequest> =
+  Joi.object<RoomUpdateRequest>({
+    id: Joi.number().required(),
+    name: Joi.string().optional(),
+    number: Joi.number().optional(),
+    description: Joi.string().optional(),
+    images: Joi.array().items(Joi.string()).optional(),
+    type: Joi.string()
+      .valid(...Object.values(RoomType))
+      .optional(),
+    capacity: Joi.number()
+      .optional()
+      .min(RoomCapacity.MIN)
+      .max(RoomCapacity.MAX),
+    handicap: Joi.boolean().optional(),
+    maintenance: Joi.boolean().optional(),
+  }).options({ abortEarly: false })

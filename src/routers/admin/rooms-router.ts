@@ -7,7 +7,6 @@ import {
   RoomCreateRequest,
   RoomIdAdminRequest,
   RoomUpdateRequest,
-  roomBasePrice,
   roomCreateValidator,
   roomIdAdminValidator,
   roomUpdateValidator,
@@ -17,6 +16,7 @@ import { prisma } from "../.."
 import Joi from "joi"
 import { Room } from "@prisma/client"
 import { handleError } from "../../errors/handle-error"
+import { roomBasePrice } from "../../config"
 
 export const roomsAdminRouter = Router()
 

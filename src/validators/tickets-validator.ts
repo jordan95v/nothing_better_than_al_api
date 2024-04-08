@@ -4,6 +4,7 @@ export interface TicketBuyRequest {
   sessionId: number
 }
 
-export const ticketBuyValidator = Joi.object<TicketBuyRequest>({
-  sessionId: Joi.number().required(),
-}).options({ abortEarly: false })
+export const ticketBuyValidator: Joi.ObjectSchema<TicketBuyRequest> =
+  Joi.object<TicketBuyRequest>({
+    sessionId: Joi.number().required(),
+  }).options({ abortEarly: false })

@@ -12,6 +12,7 @@ import { authMiddleware } from "../middlewares/auth-middleware"
 import { Transaction, TransactionType } from "@prisma/client"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
 import { handleError } from "../errors/handle-error"
+import { DEFAULT_CONFIG } from "../config"
 
 export const sessionsRouter = Router()
 
@@ -19,6 +20,8 @@ sessionsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
   const validator: Joi.ValidationResult<SessionGetRequest> =
     sessionGetValidator.validate(req.query)
   try {
+    const limit: number = validator.value.limit ?? DEFAULT_CONFIG.LIMIT
+    const page: number = validator.value.page ?? DEFAULT_CONFIG.PAGE
     const sessions: SessionWithoutTickets[] = await prisma.session.findMany({
       where: {
         startAt: {
@@ -32,8 +35,8 @@ sessionsRouter.get("/", authMiddleware, async (req: Request, res: Response) => {
         room: true,
         _count: { select: { tickets: true } },
       },
-      take: validator.value.limit ?? 10,
-      skip: validator.value.page ?? 0,
+      take: limit,
+      skip: page * limit,
     })
     res.status(200).send(sessions)
   } catch (error) {

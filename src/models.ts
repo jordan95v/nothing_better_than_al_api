@@ -35,11 +35,13 @@ export interface SessionWithoutTickets extends Session {
 }
 
 export interface UserAll extends User {
-  tokens: Token[]
-  tickets: Ticket[]
-  transactions: Transaction[]
+  tokens?: Token[]
+  tickets?: Ticket[]
+  transactions?: Transaction[]
 }
 
-export interface UserWithTransactions extends User {
-  transactions: Transaction[]
+export interface SessionAll extends Session {
+  tickets?: Ticket[]
+  room?: Room
+  film?: Film
 }

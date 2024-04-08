@@ -19,6 +19,7 @@ import { Transaction, TransactionType, User } from "@prisma/client"
 import { authMiddleware } from "../middlewares/auth-middleware"
 import { generateValidationErrorMessage } from "../errors/generate-validation-message"
 import { handleError } from "../errors/handle-error"
+import { DEFAULT_CONFIG } from "../config"
 
 export const usersRouter = Router()
 
@@ -221,8 +222,8 @@ usersRouter.get(
       })
     }
     try {
-      const limit: number = validation.value.limit ?? 10
-      const page: number = validation.value.page ?? 0
+      const limit: number = validation.value.limit ?? DEFAULT_CONFIG.LIMIT
+      const page: number = validation.value.page ?? DEFAULT_CONFIG.PAGE
       const transactions: Transaction[] = await prisma.transaction.findMany({
         where: { userId: req.user.id },
         include: { ticket: true },

@@ -8,9 +8,6 @@ import { prisma } from "../.."
 import Joi from "joi"
 import { Session, Film, Room } from "@prisma/client"
 import {
-  MAINTENANCE_TIME,
-  MAX_SESSION_START_AT,
-  MIN_SESSION_START_AT,
   SessionCreateRequest,
   SessionIdAdminRequest,
   SessionUpdateRequest,
@@ -20,6 +17,7 @@ import {
 } from "../../validators/admin/sessions-validator"
 import { SessionWithAll } from "../../models"
 import { handleError } from "../../errors/handle-error"
+import { DEFAULT_CONFIG } from "../../config"
 
 export const sessionsAdminRouter = Router()
 
@@ -34,12 +32,17 @@ export class SessionError extends Error {
 const checkHours = (date: Date, film: Film): boolean => {
   const startHour: number = date.getHours()
   const endHour: Date = new Date(date)
-  endHour.setMinutes(endHour.getMinutes() + film.duration + MAINTENANCE_TIME)
+  endHour.setMinutes(
+    endHour.getMinutes() + film.duration + DEFAULT_CONFIG.MAINTENANCE_TIME
+  )
   return (
-    !(startHour < MIN_SESSION_START_AT || startHour > MAX_SESSION_START_AT) &&
     !(
-      endHour.getHours() < MIN_SESSION_START_AT ||
-      endHour.getHours() > MAX_SESSION_START_AT
+      startHour < DEFAULT_CONFIG.MIN_SESSION_START_AT ||
+      startHour > DEFAULT_CONFIG.MAX_SESSION_START_AT
+    ) &&
+    !(
+      endHour.getHours() < DEFAULT_CONFIG.MIN_SESSION_START_AT ||
+      endHour.getHours() > DEFAULT_CONFIG.MAX_SESSION_START_AT
     )
   )
 }
@@ -58,7 +61,7 @@ const checkSessionOverlap = async (
   const newSessionStart: Date = new Date(request.startAt)
   const newSessionEnd: Date = new Date(request.startAt)
   newSessionEnd.setMinutes(
-    newSessionEnd.getMinutes() + film.duration + MAINTENANCE_TIME
+    newSessionEnd.getMinutes() + film.duration + DEFAULT_CONFIG.MAINTENANCE_TIME
   )
   for (const session of foundSession) {
     const sessionStart: Date = new Date(session.startAt)
