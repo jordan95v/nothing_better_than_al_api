@@ -12,11 +12,8 @@ import {
   Role,
   Ticket,
 } from "@prisma/client"
-import {
-  RoomCapacity,
-  roomBasePrice,
-} from "../validators/admin/rooms-validator"
 import { hash } from "bcrypt"
+import { RoomCapacity, roomBasePrice } from "../config"
 
 const prisma = new PrismaClient()
 
