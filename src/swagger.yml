@@ -635,8 +635,7 @@ paths:
                           $ref: "#/components/schemas/Film"
                         room:
                           $ref: "#/components/schemas/Room"
-                    - _count:
-                        type: "object"
+                    - type: "object"
                         properties:
                           tickets:
                             type: "number"
