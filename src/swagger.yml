@@ -636,10 +636,10 @@ paths:
                         room:
                           $ref: "#/components/schemas/Room"
                     - type: "object"
-                        properties:
-                          tickets:
-                            type: "number"
-                            example: 18
+                      properties:
+                        tickets:
+                          type: "number"
+                          example: 18
         401:
           $ref: "#/components/responses/BearerNotProvided"
         500:
