@@ -963,3 +963,70 @@ paths:
           $ref: "#/components/responses/BearerNotProvided"
         500:
           $ref: "#/components/responses/ServerError"
+
+  /room/{id}/statistics:
+    get:
+      tags:
+        - "Statistics"
+      security:
+        - bearer: []
+      summary: "Get statistics"
+      description: "Get statistics for a room"
+      parameters:
+        - in: "path"
+          name: "id"
+          schema:
+            type: "number"
+            example: 1
+          required: true
+          description: "ID of the room to get statistics for"
+      responses:
+        200:
+          description: "Statistics"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    session:
+                      $ref: "#/components/schemas/Session"
+                    usedTickets:
+                      type: "number"
+                      example: 17
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  /statistics:
+    get:
+      tags:
+        - "Statistics"
+      security:
+        - bearer: []
+      summary: "Get statistics"
+      description: "Get statistics for the cinema"
+      responses:
+        200:
+          description: "Statistics"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    session:
+                      $ref: "#/components/schemas/Session"
+                    usedTickets:
+                      type: "number"
+                      example: 17
+                    ticketSales:
+                      type: "number"
+                      example: 30
+        401:
+          $ref: "#/components/responses/BearerNotProvided"
+        500:
+          $ref: "#/components/responses/ServerError"
