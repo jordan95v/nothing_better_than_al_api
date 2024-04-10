@@ -1,5 +1,9 @@
 <h1>Nothing better than AL API</h1>
 
+This project is a REST API that provides information about a cinema. It was developed using `TypeScript` and `Express.js`.
+
+<h1>Table of contents</h1>
+
 - [Installation](#installation)
   - [Environment variables](#environment-variables)
   - [Manual installation](#manual-installation)
@@ -10,9 +14,10 @@
     - [Caddyfile](#caddyfile)
     - [Docker compose](#docker-compose)
 
+
 # Installation
 
-This project is a REST API that provides information about a cinema. It was developed using TypeScript and `Express.js`. The database used is PostgreSQL.
+To install the project, you can either use the Docker container or install it manually.
 
 ## Environment variables
 
